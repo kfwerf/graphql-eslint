@@ -1,9 +1,13 @@
-import { Kind } from 'graphql';
+import { Kind, ObjectTypeDefinitionNode } from 'graphql';
 import { GraphQLESLintRule } from '../types';
+import { GraphQLESTreeNode } from '../estree-parser';
 import { requireGraphQLSchemaFromContext } from '@graphql-eslint/eslint-plugin';
 
 const RULE_ID = 'relay-connection-types';
-export const CONNECTION_TYPE_MUST_BE_AN_OBJECT_TYPE = 'CONNECTION_TYPE_MUST_BE_AN_OBJECT_TYPE';
+const MUST_BE_OBJECT_TYPE = 'MUST_BE_OBJECT_TYPE';
+const MUST_CONTAIN_FIELD_EDGES = 'MUST_CONTAIN_FIELD_EDGES';
+const MUST_CONTAIN_FIELD_PAGE_INFO = 'MUST_CONTAIN_FIELD_PAGE_INFO';
+const MUST_HAVE_CONNECTION_SUFFIX = 'MUST_HAVE_CONNECTION_SUFFIX';
 
 const NON_CONNECTION_TYPES = [
   Kind.DIRECTIVE_DEFINITION,
@@ -18,6 +22,11 @@ const NON_CONNECTION_TYPES = [
   Kind.INTERFACE_TYPE_EXTENSION,
   Kind.OBJECT_TYPE_EXTENSION,
 ];
+
+const hasEdgesField = (node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) =>
+  node.fields.some(field => field.name.value === 'edges');
+const hasPageInfoField = (node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) =>
+  node.fields.some(field => field.name.value === 'pageInfo');
 
 const rule: GraphQLESLintRule = {
   meta: {
@@ -46,7 +55,10 @@ const rule: GraphQLESLintRule = {
       ],
     },
     messages: {
-      [CONNECTION_TYPE_MUST_BE_AN_OBJECT_TYPE]: 'Connection type must be an "Object" type.',
+      [MUST_BE_OBJECT_TYPE]: 'Connection type must be an "Object" type.',
+      [MUST_HAVE_CONNECTION_SUFFIX]: 'Connection type must have `Connection` suffix.',
+      [MUST_CONTAIN_FIELD_EDGES]: 'Connection type must contain a field `edges`.',
+      [MUST_CONTAIN_FIELD_PAGE_INFO]: 'Connection type must contain a field `pageInfo`.',
     },
     schema: [],
   },
@@ -56,10 +68,22 @@ const rule: GraphQLESLintRule = {
     // console.log(schema)
     return {
       [nonConnectionTypesSelector](node) {
-        context.report({
-          node,
-          messageId: CONNECTION_TYPE_MUST_BE_AN_OBJECT_TYPE,
-        });
+        context.report({ node, messageId: MUST_BE_OBJECT_TYPE });
+      },
+      ObjectTypeDefinition(node) {
+        const hasConnectionSuffix = node.name.value.endsWith('Connection');
+        if (hasConnectionSuffix) {
+          if (!hasEdgesField(node)) {
+            context.report({ node: node.name, messageId: MUST_CONTAIN_FIELD_EDGES });
+          }
+          if (!hasPageInfoField(node)) {
+            context.report({ node: node.name, messageId: MUST_CONTAIN_FIELD_PAGE_INFO });
+          }
+        } else {
+          if (hasEdgesField(node) && hasPageInfoField(node)) {
+            context.report({ node: node.name, messageId: MUST_HAVE_CONNECTION_SUFFIX });
+          }
+        }
       },
     };
   },

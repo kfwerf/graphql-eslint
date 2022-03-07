@@ -15,18 +15,23 @@ function useSchema(code: string): { code: string; parserOptions: ParserOptions }
 ruleTester.runGraphQLTests('relay-connection-types', rule, {
   valid: [
     {
-      name: 'should ',
-      code: /* GraphQL */ ``,
+      name: 'follow Relay spec',
+      code: /* GraphQL */ `
+        type UserConnection {
+          edges: UserEdge
+          pageInfo: PageInfo
+        }
+      `,
     },
   ],
   invalid: [
     {
       name: 'should report about non connection types with `Connection` suffix',
-      ...useSchema(/* GraphQL */ `
+      code: /* GraphQL */ `
         directive @directiveConnection(role: [RoleConnection!]!) on FIELD_DEFINITION
         scalar DateTimeConnection
-        union DataConnection = UserConnection | PostConnection
-        extend union DataConnection = CommentConnection
+        union DataConnection = UserConnection | Post
+        extend union DataConnection = Comment
         input CreateUserConnection
         extend input CreateUserConnection {
           firstName: String
@@ -43,10 +48,30 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
           role: RoleConnection
         }
         type UserConnection
-        type PostConnection
-        type CommentConnection
-      `),
-      errors: 11,
+        type Post
+        type Comment
+      `,
+      errors: 13,
+    },
+    {
+      name: 'should report about missing `Connection` suffix',
+      code: /* GraphQL */ `
+        type User {
+          edges: UserEdge
+          pageInfo: PageInfo
+        }
+      `,
+      errors: 1,
+    },
+    {
+      name: 'should report about missing `edges` field',
+      code: 'type UserConnection { pageInfo: PageInfo }',
+      errors: 1,
+    },
+    {
+      name: 'should report about missing `pageInfo` field',
+      code: 'type UserConnection { edges: UserEdge }',
+      errors: 1,
     },
   ],
 });
