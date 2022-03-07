@@ -354,3 +354,38 @@ exports[` 13`] = `
       5 |           endCursor: String!
       6 |         }
 `;
+
+exports[` 14`] = `
+Code
+
+      1 |         type PageInfo {
+      2 |           hasPreviousPage: Boolean
+      3 |           startCursor: String
+      4 |         }
+
+❌ Error 1/4
+
+    > 1 |         type PageInfo {
+        |              ^^^^^^^^ \`PageInfo\` must contain a field \`hasNextPage\`, that return non-null boolean.
+      2 |           hasPreviousPage: Boolean
+
+❌ Error 2/4
+
+    > 1 |         type PageInfo {
+        |              ^^^^^^^^ \`PageInfo\` must contain a field \`endCursor\`, that return non-null opaque string.
+      2 |           hasPreviousPage: Boolean
+
+❌ Error 3/4
+
+      1 |         type PageInfo {
+    > 2 |           hasPreviousPage: Boolean
+        |                            ^^^^^^^ \`PageInfo\` must contain a field \`hasPreviousPage\`, that return non-null boolean.
+      3 |           startCursor: String
+
+❌ Error 4/4
+
+      2 |           hasPreviousPage: Boolean
+    > 3 |           startCursor: String
+        |                        ^^^^^^ \`PageInfo\` must contain a field \`startCursor\`, that return non-null opaque string.
+      4 |         }
+`;

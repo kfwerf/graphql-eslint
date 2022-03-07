@@ -216,5 +216,14 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
       `,
       errors: 1,
     },
+    {
+      code: /* GraphQL */ `
+        type PageInfo {
+          hasPreviousPage: Boolean
+          startCursor: String
+        }
+      `,
+      errors: 4,
+    },
   ],
 });

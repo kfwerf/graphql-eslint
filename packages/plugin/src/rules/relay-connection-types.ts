@@ -116,9 +116,9 @@ const rule: GraphQLESLintRule = {
       [PAGE_INFO_TYPE_MUST_EXIST]: 'The server must provide a `PageInfo` Object type.',
       [PAGE_INFO_TYPE_MUST_BE_OBJECT_TYPE]: '`PageInfo` must be an Object type.',
       [PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_PAGE]:
-        '`PageInfo` must contain a field `{{ fieldName }}`, which return non-null booleans.',
+        '`PageInfo` must contain a field `{{ fieldName }}`, that return non-null boolean.',
       [PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_CURSOR]:
-        '`PageInfo` must contain fields `{{ fieldName }}`, which return non-null opaque strings.',
+        '`PageInfo` must contain a field `{{ fieldName }}`, that return non-null opaque string.',
     },
     schema: [],
   },
@@ -162,6 +162,39 @@ const rule: GraphQLESLintRule = {
       },
       [`:matches(${NON_OBJECT_TYPES})[name.value=PageInfo] > .name`](node) {
         report({ node, messageId: PAGE_INFO_TYPE_MUST_BE_OBJECT_TYPE });
+      },
+      'ObjectTypeDefinition[name.value=PageInfo]'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) {
+        const fieldMap = Object.fromEntries(node.fields.map(field => [field.name.value, field]));
+        for (const fieldName of ['hasPreviousPage', 'hasNextPage']) {
+          const field = fieldMap[fieldName];
+          const isNonNullBoolean =
+            field &&
+            field.gqlType.kind === Kind.NON_NULL_TYPE &&
+            field.gqlType.gqlType.kind === Kind.NAMED_TYPE &&
+            field.gqlType.gqlType.name.value === 'Boolean';
+          if (!isNonNullBoolean) {
+            report({
+              node: field ? field.gqlType : node.name,
+              messageId: PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_PAGE,
+              data: { fieldName },
+            });
+          }
+        }
+        for (const fieldName of ['startCursor', 'endCursor']) {
+          const field = fieldMap[fieldName];
+          const isNonNullString =
+            field &&
+            field.gqlType.kind === Kind.NON_NULL_TYPE &&
+            field.gqlType.gqlType.kind === Kind.NAMED_TYPE &&
+            field.gqlType.gqlType.name.value === 'String';
+          if (!isNonNullString) {
+            report({
+              node: field ? field.gqlType : node.name,
+              messageId: PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_CURSOR,
+              data: { fieldName },
+            });
+          }
+        }
       },
     };
   },
