@@ -19,7 +19,7 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
       code: /* GraphQL */ `
         type UserConnection {
           edges: [UserEdge]
-          pageInfo: PageInfo
+          pageInfo: PageInfo!
         }
       `,
     },
@@ -28,22 +28,28 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
       code: /* GraphQL */ `
         type UserConnection {
           edges: [UserEdge]
-          pageInfo: PageInfo
+          pageInfo: PageInfo!
         }
         type PostConnection {
           edges: [PostEdge!]
-          pageInfo: PageInfo
+          pageInfo: PageInfo!
         }
         type CommentConnection {
           edges: [CommentEdge]!
-          pageInfo: PageInfo
+          pageInfo: PageInfo!
         }
         type AddressConnection {
           edges: [AddressEdge!]!
-          pageInfo: PageInfo
+          pageInfo: PageInfo!
         }
       `,
     },
+    /* GraphQL */ `
+      type UserConnection {
+        edges: [UserEdge]
+        pageInfo: PageInfo!
+      }
+    `,
   ],
   invalid: [
     {
@@ -86,7 +92,7 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
     },
     {
       name: 'should report about missing `edges` field',
-      code: 'type UserConnection { pageInfo: PageInfo }',
+      code: 'type UserConnection { pageInfo: PageInfo! }',
       errors: 1,
     },
     {
@@ -99,14 +105,36 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
       code: /* GraphQL */ `
         type UserConnection {
           edges: UserEdge
-          pageInfo: PageInfo
+          pageInfo: PageInfo!
         }
         type PostConnection {
           edges: PostEdge!
-          pageInfo: PageInfo
+          pageInfo: PageInfo!
         }
       `,
       errors: 2,
+    },
+    {
+      name: '`pageInfo` field must return a non-null `PageInfo` object',
+      code: /* GraphQL */ `
+        type UserConnection {
+          edges: [UserEdge]
+          pageInfo: PageInfo
+        }
+        type PostConnection {
+          edges: [PostEdge]
+          pageInfo: [PageInfo]
+        }
+        type CommentConnection {
+          edges: [CommentEdge]
+          pageInfo: [PageInfo]!
+        }
+        type AddressConnection {
+          edges: [AddressEdge]
+          pageInfo: [PageInfo!]!
+        }
+      `,
+      errors: 4,
     },
   ],
 });

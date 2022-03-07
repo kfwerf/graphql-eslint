@@ -130,7 +130,7 @@ exports[` 2`] = `
 exports[` 3`] = `
 ❌ Error
 
-    > 1 | type UserConnection { pageInfo: PageInfo }
+    > 1 | type UserConnection { pageInfo: PageInfo! }
         |      ^^^^^^^^^^^^^^ Connection type must contain a field \`edges\`.
 `;
 
@@ -146,11 +146,11 @@ Code
 
       1 |         type UserConnection {
       2 |           edges: UserEdge
-      3 |           pageInfo: PageInfo
+      3 |           pageInfo: PageInfo!
       4 |         }
       5 |         type PostConnection {
       6 |           edges: PostEdge!
-      7 |           pageInfo: PageInfo
+      7 |           pageInfo: PageInfo!
       8 |         }
 
 ❌ Error 1/2
@@ -158,12 +158,61 @@ Code
       1 |         type UserConnection {
     > 2 |           edges: UserEdge
         |                  ^^^^^^^^ \`edges\` field must return a list type.
-      3 |           pageInfo: PageInfo
+      3 |           pageInfo: PageInfo!
 
 ❌ Error 2/2
 
       5 |         type PostConnection {
     > 6 |           edges: PostEdge!
         |                  ^^^^^^^^ \`edges\` field must return a list type.
-      7 |           pageInfo: PageInfo
+      7 |           pageInfo: PageInfo!
+`;
+
+exports[` 6`] = `
+Code
+
+       1 |         type UserConnection {
+       2 |           edges: [UserEdge]
+       3 |           pageInfo: PageInfo
+       4 |         }
+       5 |         type PostConnection {
+       6 |           edges: [PostEdge]
+       7 |           pageInfo: [PageInfo]
+       8 |         }
+       9 |         type CommentConnection {
+      10 |           edges: [CommentEdge]
+      11 |           pageInfo: [PageInfo]!
+      12 |         }
+      13 |         type AddressConnection {
+      14 |           edges: [AddressEdge]
+      15 |           pageInfo: [PageInfo!]!
+      16 |         }
+
+❌ Error 1/4
+
+      2 |           edges: [UserEdge]
+    > 3 |           pageInfo: PageInfo
+        |                     ^^^^^^^^ \`pageInfo\` field must return a non-null \`PageInfo\` object.
+      4 |         }
+
+❌ Error 2/4
+
+      6 |           edges: [PostEdge]
+    > 7 |           pageInfo: [PageInfo]
+        |                     ^^^^^^^^^ \`pageInfo\` field must return a non-null \`PageInfo\` object.
+      8 |         }
+
+❌ Error 3/4
+
+      10 |           edges: [CommentEdge]
+    > 11 |           pageInfo: [PageInfo]!
+         |                     ^^^^^^^^^^ \`pageInfo\` field must return a non-null \`PageInfo\` object.
+      12 |         }
+
+❌ Error 4/4
+
+      14 |           edges: [AddressEdge]
+    > 15 |           pageInfo: [PageInfo!]!
+         |                     ^^^^^^^^^^^ \`pageInfo\` field must return a non-null \`PageInfo\` object.
+      16 |         }
 `;
