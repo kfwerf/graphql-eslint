@@ -137,6 +137,33 @@ exports[` 3`] = `
 exports[` 4`] = `
 ❌ Error
 
-    > 1 | type UserConnection { edges: UserEdge }
+    > 1 | type UserConnection { edges: [UserEdge] }
         |      ^^^^^^^^^^^^^^ Connection type must contain a field \`pageInfo\`.
+`;
+
+exports[` 5`] = `
+Code
+
+      1 |         type UserConnection {
+      2 |           edges: UserEdge
+      3 |           pageInfo: PageInfo
+      4 |         }
+      5 |         type PostConnection {
+      6 |           edges: PostEdge!
+      7 |           pageInfo: PageInfo
+      8 |         }
+
+❌ Error 1/2
+
+      1 |         type UserConnection {
+    > 2 |           edges: UserEdge
+        |                  ^^^^^^^^ \`edges\` field must return a list type.
+      3 |           pageInfo: PageInfo
+
+❌ Error 2/2
+
+      5 |         type PostConnection {
+    > 6 |           edges: PostEdge!
+        |                  ^^^^^^^^ \`edges\` field must return a list type.
+      7 |           pageInfo: PageInfo
 `;

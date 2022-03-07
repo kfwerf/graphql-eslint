@@ -1,4 +1,4 @@
-import { Kind, ObjectTypeDefinitionNode } from 'graphql';
+import { Kind, NameNode, ObjectTypeDefinitionNode } from 'graphql';
 import { GraphQLESLintRule } from '../types';
 import { GraphQLESTreeNode } from '../estree-parser';
 import { requireGraphQLSchemaFromContext } from '@graphql-eslint/eslint-plugin';
@@ -8,6 +8,7 @@ const MUST_BE_OBJECT_TYPE = 'MUST_BE_OBJECT_TYPE';
 const MUST_CONTAIN_FIELD_EDGES = 'MUST_CONTAIN_FIELD_EDGES';
 const MUST_CONTAIN_FIELD_PAGE_INFO = 'MUST_CONTAIN_FIELD_PAGE_INFO';
 const MUST_HAVE_CONNECTION_SUFFIX = 'MUST_HAVE_CONNECTION_SUFFIX';
+const EDGES_MUST_RETURN_LIST_TYPE = 'EDGES_MUST_RETURN_LIST_TYPE';
 
 const NON_CONNECTION_TYPES = [
   Kind.DIRECTIVE_DEFINITION,
@@ -59,6 +60,7 @@ const rule: GraphQLESLintRule = {
       [MUST_HAVE_CONNECTION_SUFFIX]: 'Connection type must have `Connection` suffix.',
       [MUST_CONTAIN_FIELD_EDGES]: 'Connection type must contain a field `edges`.',
       [MUST_CONTAIN_FIELD_PAGE_INFO]: 'Connection type must contain a field `pageInfo`.',
+      [EDGES_MUST_RETURN_LIST_TYPE]: '`edges` field must return a list type.',
     },
     schema: [],
   },
@@ -83,6 +85,16 @@ const rule: GraphQLESLintRule = {
           if (hasEdgesField(node) && hasPageInfoField(node)) {
             context.report({ node: node.name, messageId: MUST_HAVE_CONNECTION_SUFFIX });
           }
+        }
+      },
+      'ObjectTypeDefinition[name.value=/Connection$/] > FieldDefinition > Name[value=edges]'(
+        node: GraphQLESTreeNode<NameNode>
+      ) {
+        const type = (node as any).parent.gqlType;
+        const isListType =
+          type.kind === Kind.LIST_TYPE || (type.kind === Kind.NON_NULL_TYPE && type.gqlType.kind === Kind.LIST_TYPE);
+        if (!isListType) {
+          context.report({ node: type, messageId: EDGES_MUST_RETURN_LIST_TYPE });
         }
       },
     };

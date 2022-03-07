@@ -18,7 +18,28 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
       name: 'follow Relay spec',
       code: /* GraphQL */ `
         type UserConnection {
-          edges: UserEdge
+          edges: [UserEdge]
+          pageInfo: PageInfo
+        }
+      `,
+    },
+    {
+      name: '`edges` field should return a list type that wraps an edge type',
+      code: /* GraphQL */ `
+        type UserConnection {
+          edges: [UserEdge]
+          pageInfo: PageInfo
+        }
+        type PostConnection {
+          edges: [PostEdge!]
+          pageInfo: PageInfo
+        }
+        type CommentConnection {
+          edges: [CommentEdge]!
+          pageInfo: PageInfo
+        }
+        type AddressConnection {
+          edges: [AddressEdge!]!
           pageInfo: PageInfo
         }
       `,
@@ -70,8 +91,22 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
     },
     {
       name: 'should report about missing `pageInfo` field',
-      code: 'type UserConnection { edges: UserEdge }',
+      code: 'type UserConnection { edges: [UserEdge] }',
       errors: 1,
+    },
+    {
+      name: '`edges` field should return a list type that wraps an edge type',
+      code: /* GraphQL */ `
+        type UserConnection {
+          edges: UserEdge
+          pageInfo: PageInfo
+        }
+        type PostConnection {
+          edges: PostEdge!
+          pageInfo: PageInfo
+        }
+      `,
+      errors: 2,
     },
   ],
 });
