@@ -2,11 +2,14 @@ import { GraphQLESLintRule } from '../types';
 import { GraphQLESTreeNode } from '../estree-parser';
 import { Kind, ObjectTypeDefinitionNode } from 'graphql';
 import { NON_OBJECT_TYPES } from './relay-connection-types';
+import { requireGraphQLSchemaFromContext } from '../utils';
 
 const RULE_ID = 'relay-page-info';
 const MESSAGE_MUST_EXIST = 'MESSAGE_MUST_EXIST';
 const MESSAGE_MUST_BE_OBJECT_TYPE = 'MESSAGE_MUST_BE_OBJECT_TYPE';
 const notPageInfoTypesSelector = `:matches(${NON_OBJECT_TYPES})[name.value=PageInfo] > .name`;
+
+let hasPageInfoChecked = false;
 
 const rule: GraphQLESLintRule = {
   meta: {
@@ -24,15 +27,19 @@ const rule: GraphQLESLintRule = {
       url: `https://github.com/dotansimha/graphql-eslint/blob/master/docs/rules/${RULE_ID}.md`,
       examples: [
         {
-          title: 'Incorrect',
-          code: /* GraphQL */ ``,
-        },
-        {
           title: 'Correct',
-          code: /* GraphQL */ ``,
+          code: /* GraphQL */ `
+            type PageInfo {
+              hasPreviousPage: Boolean!
+              hasNextPage: Boolean!
+              startCursor: String!
+              endCursor: String!
+            }
+          `,
         },
       ],
       isDisabledForAllConfig: true,
+      requiresSchema: true,
     },
     messages: {
       [MESSAGE_MUST_EXIST]: 'The server must provide a `PageInfo` object.',
@@ -41,6 +48,18 @@ const rule: GraphQLESLintRule = {
     schema: [],
   },
   create(context) {
+    if (process.env.NODE_ENV === 'test' || !hasPageInfoChecked) {
+      const schema = requireGraphQLSchemaFromContext(RULE_ID, context);
+      const pageInfoType = schema.getType('PageInfo');
+      if (!pageInfoType) {
+        context.report({
+          // Report on first character
+          loc: { column: 0, line: 1 },
+          messageId: MESSAGE_MUST_EXIST,
+        });
+      }
+      hasPageInfoChecked = true;
+    }
     return {
       [notPageInfoTypesSelector](node) {
         context.report({ node, messageId: MESSAGE_MUST_BE_OBJECT_TYPE });

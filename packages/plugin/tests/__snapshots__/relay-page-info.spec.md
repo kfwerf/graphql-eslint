@@ -1,7 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[` 1`] = `
-❌ Error
+Code
+
+      1 | directive @PageInfo on FIELD_DEFINITION
+
+❌ Error 1/2
+
+    > 1 | directive @PageInfo on FIELD_DEFINITION
+        | ^ The server must provide a \`PageInfo\` object.
+
+❌ Error 2/2
 
     > 1 | directive @PageInfo on FIELD_DEFINITION
         |            ^^^^^^^^ \`PageInfo\` must be an Object type.
@@ -25,6 +34,7 @@ Code
       6 |         }
       7 |         type Post
       8 |         type Comment
+      9 |         type UserEdge
 
 ❌ Error 1/2
 
@@ -118,13 +128,16 @@ Code
 exports[` 7`] = `
 ❌ Error
 
-    > 1 |         extend type PageInfo {
-        |                     ^^^^^^^^ \`PageInfo\` must be an Object type.
+      1 |         type PageInfo {
       2 |           hasPreviousPage: Boolean!
       3 |           hasNextPage: Boolean!
       4 |           startCursor: String!
       5 |           endCursor: String!
       6 |         }
+    > 7 |         extend type PageInfo {
+        |                     ^^^^^^^^ \`PageInfo\` must be an Object type.
+      8 |           foo: Int
+      9 |         }
 `;
 
 exports[` 8`] = `
@@ -160,4 +173,11 @@ Code
     > 3 |           startCursor: String
         |                        ^^^^^^ Field \`startCursor\` must return non-null opaque string.
       4 |         }
+`;
+
+exports[` 9`] = `
+❌ Error
+
+    > 1 | type Query { foo: Int }
+        | ^ The server must provide a \`PageInfo\` object.
 `;

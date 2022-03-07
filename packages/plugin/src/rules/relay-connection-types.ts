@@ -36,7 +36,7 @@ const rule: GraphQLESLintRule = {
     docs: {
       category: 'Schema',
       description: [
-        'Set of rules to follow Relay specification.',
+        'Set of rules to follow Relay specification for Connection types.',
         '### Connection types',
         [
           '- Any type whose name ends in "Connection" is considered by spec to be a `Connection type`',

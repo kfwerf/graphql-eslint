@@ -14,26 +14,27 @@ function useSchema(code: string): { code: string; parserOptions: ParserOptions }
 
 ruleTester.runGraphQLTests('relay-page-info', rule, {
   valid: [
-    /* GraphQL */ `
+    useSchema(/* GraphQL */ `
       type PageInfo {
         hasPreviousPage: Boolean!
         hasNextPage: Boolean!
         startCursor: String!
         endCursor: String!
       }
-    `,
+    `),
   ],
   invalid: [
     {
-      code: 'directive @PageInfo on FIELD_DEFINITION',
+      ...useSchema('directive @PageInfo on FIELD_DEFINITION'),
+      errors: 2,
+    },
+    {
+      ...useSchema('scalar PageInfo'),
       errors: 1,
     },
     {
-      code: 'scalar PageInfo',
-      errors: 1,
-    },
-    {
-      code: /* GraphQL */ `
+      name: 'when union',
+      ...useSchema(/* GraphQL */ `
         union PageInfo = UserConnection | Post
         extend union PageInfo = Comment
         type UserConnection {
@@ -42,11 +43,13 @@ ruleTester.runGraphQLTests('relay-page-info', rule, {
         }
         type Post
         type Comment
-      `,
+        type UserEdge
+      `),
       errors: 2,
     },
     {
-      code: /* GraphQL */ `
+      name: 'when input',
+      ...useSchema(/* GraphQL */ `
         input PageInfo
         extend input PageInfo {
           hasPreviousPage: Boolean!
@@ -54,11 +57,12 @@ ruleTester.runGraphQLTests('relay-page-info', rule, {
           startCursor: String!
           endCursor: String!
         }
-      `,
+      `),
       errors: 2,
     },
     {
-      code: /* GraphQL */ `
+      name: 'when enum',
+      ...useSchema(/* GraphQL */ `
         enum PageInfo
         extend enum PageInfo {
           hasPreviousPage
@@ -66,11 +70,12 @@ ruleTester.runGraphQLTests('relay-page-info', rule, {
           startCursor
           endCursor
         }
-      `,
+      `),
       errors: 2,
     },
     {
-      code: /* GraphQL */ `
+      name: 'when interface',
+      ...useSchema(/* GraphQL */ `
         interface PageInfo
         extend interface PageInfo {
           hasPreviousPage: Boolean!
@@ -78,28 +83,38 @@ ruleTester.runGraphQLTests('relay-page-info', rule, {
           startCursor: String!
           endCursor: String!
         }
-      `,
+      `),
       errors: 2,
     },
     {
-      code: /* GraphQL */ `
-        extend type PageInfo {
+      name: 'when extend type',
+      ...useSchema(/* GraphQL */ `
+        type PageInfo {
           hasPreviousPage: Boolean!
           hasNextPage: Boolean!
           startCursor: String!
           endCursor: String!
         }
-      `,
+        extend type PageInfo {
+          foo: Int
+        }
+      `),
       errors: 1,
     },
     {
-      code: /* GraphQL */ `
+      name: 'when fields is missing or incorrect return type',
+      ...useSchema(/* GraphQL */ `
         type PageInfo {
           hasPreviousPage: Boolean
           startCursor: String
         }
-      `,
+      `),
       errors: 4,
+    },
+    {
+      name: 'when `PageInfo` is missing',
+      ...useSchema('type Query { foo: Int }'),
+      errors: 1,
     },
   ],
 });

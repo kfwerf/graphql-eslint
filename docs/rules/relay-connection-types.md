@@ -5,7 +5,7 @@
 - Requires GraphQL Schema: `false` [ℹ️](../../README.md#extended-linting-rules-with-graphql-schema)
 - Requires GraphQL Operations: `false` [ℹ️](../../README.md#extended-linting-rules-with-siblings-operations)
 
-Set of rules to follow Relay specification.
+Set of rules to follow Relay specification for Connection types.
 
 ### Connection types
 
@@ -37,12 +37,6 @@ Backward pagination arguments
 
 - `last` takes a non-negative integer
 - `before` takes the Cursor type
-
-### PageInfo
-
-- `PageInfo` must be an Object type
-- `PageInfo` must contain fields `hasPreviousPage` and `hasNextPage`, which return non-null booleans
-- `PageInfo` must contain fields `startCursor` and `endCursor`, which return non-null opaque strings
 
 ## Usage Examples
 
