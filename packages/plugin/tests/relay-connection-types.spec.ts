@@ -117,24 +117,28 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
     {
       name: '`pageInfo` field must return a non-null `PageInfo` object',
       code: /* GraphQL */ `
-        type UserConnection {
-          edges: [UserEdge]
+        type AConnection {
+          edges: [AEdge]
           pageInfo: PageInfo
         }
-        type PostConnection {
-          edges: [PostEdge]
+        type BConnection {
+          edges: [BEdge]
           pageInfo: [PageInfo]
         }
-        type CommentConnection {
-          edges: [CommentEdge]
+        type CConnection {
+          edges: [CEdge]
+          pageInfo: [PageInfo!]
+        }
+        type DConnection {
+          edges: [DEdge]
           pageInfo: [PageInfo]!
         }
-        type AddressConnection {
-          edges: [AddressEdge]
+        type EConnection {
+          edges: [EEdge]
           pageInfo: [PageInfo!]!
         }
       `,
-      errors: 4,
+      errors: 5,
     },
   ],
 });

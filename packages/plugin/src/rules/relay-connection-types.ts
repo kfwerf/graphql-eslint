@@ -1,4 +1,4 @@
-import { Kind, NameNode, ObjectTypeDefinitionNode } from 'graphql';
+import { Kind, ObjectTypeDefinitionNode, TypeNode } from 'graphql';
 import { GraphQLESLintRule } from '../types';
 import { GraphQLESTreeNode } from '../estree-parser';
 
@@ -40,8 +40,8 @@ const rule: GraphQLESLintRule = {
         '',
         '- Any type whose name ends in "Connection" is considered by spec to be a `Connection type`',
         '- Connection type must be an "Object" type',
-        '- Connection type must contain a field `edges` that must return a list type that wraps an edge type',
-        '- Connection type must contain a field `pageInfo` that must return a non-null `PageInfo` object',
+        '- Connection type must contain a field `edges` that return a list type which wraps an edge type',
+        '- Connection type must contain a field `pageInfo` that return a non-null `PageInfo` object',
       ].join('\n'),
       url: 'https://github.com/dotansimha/graphql-eslint/blob/master/docs/rules/relay-connection-types.md',
       isDisabledForAllConfig: true,
@@ -76,44 +76,42 @@ const rule: GraphQLESLintRule = {
     },
     schema: [],
   },
-  create(context) {
+  create({ report }) {
     return {
       [nonConnectionTypesSelector](node) {
-        context.report({ node, messageId: MUST_BE_OBJECT_TYPE });
+        report({ node, messageId: MUST_BE_OBJECT_TYPE });
       },
-      'ObjectTypeDefinition[name.value!=/Connection$/] > Name'(node) {
-        if (hasEdgesField(node.parent) && hasPageInfoField(node.parent)) {
-          context.report({ node, messageId: MUST_HAVE_CONNECTION_SUFFIX });
+      'ObjectTypeDefinition[name.value!=/Connection$/]'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) {
+        if (hasEdgesField(node) && hasPageInfoField(node)) {
+          report({ node: node.name, messageId: MUST_HAVE_CONNECTION_SUFFIX });
         }
       },
-      'ObjectTypeDefinition[name.value=/Connection$/] > Name'(node) {
-        if (!hasEdgesField(node.parent)) {
-          context.report({ node, messageId: MUST_CONTAIN_FIELD_EDGES });
+      'ObjectTypeDefinition[name.value=/Connection$/]'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) {
+        if (!hasEdgesField(node)) {
+          report({ node: node.name, messageId: MUST_CONTAIN_FIELD_EDGES });
         }
-        if (!hasPageInfoField(node.parent)) {
-          context.report({ node, messageId: MUST_CONTAIN_FIELD_PAGE_INFO });
+        if (!hasPageInfoField(node)) {
+          report({ node: node.name, messageId: MUST_CONTAIN_FIELD_PAGE_INFO });
         }
       },
-      'ObjectTypeDefinition[name.value=/Connection$/] > FieldDefinition > Name[value=edges]'(
-        node: GraphQLESTreeNode<NameNode>
+      'ObjectTypeDefinition[name.value=/Connection$/] > FieldDefinition[name.value=edges] > .gqlType'(
+        node: GraphQLESTreeNode<TypeNode>
       ) {
-        const type = (node as any).parent.gqlType;
         const isListType =
-          type.kind === Kind.LIST_TYPE || (type.kind === Kind.NON_NULL_TYPE && type.gqlType.kind === Kind.LIST_TYPE);
+          node.kind === Kind.LIST_TYPE || (node.kind === Kind.NON_NULL_TYPE && node.gqlType.kind === Kind.LIST_TYPE);
         if (!isListType) {
-          context.report({ node: type, messageId: EDGES_MUST_RETURN_LIST_TYPE });
+          report({ node, messageId: EDGES_MUST_RETURN_LIST_TYPE });
         }
       },
-      'ObjectTypeDefinition[name.value=/Connection$/] > FieldDefinition > Name[value=pageInfo]'(
-        node: GraphQLESTreeNode<NameNode>
+      'ObjectTypeDefinition[name.value=/Connection$/] > FieldDefinition[name.value=pageInfo] > .gqlType'(
+        node: GraphQLESTreeNode<TypeNode>
       ) {
-        const type = (node as any).parent.gqlType;
-        const isNonNullType =
-          type.kind === Kind.NON_NULL_TYPE &&
-          type.gqlType.kind === Kind.NAMED_TYPE &&
-          type.gqlType.name.value === 'PageInfo';
-        if (!isNonNullType) {
-          context.report({ node: type, messageId: PAGE_INFO_MUST_RETURN_NON_NULL_TYPE });
+        const isNonNullPageInfoType =
+          node.kind === Kind.NON_NULL_TYPE &&
+          node.gqlType.kind === Kind.NAMED_TYPE &&
+          node.gqlType.name.value === 'PageInfo';
+        if (!isNonNullPageInfoType) {
+          report({ node, messageId: PAGE_INFO_MUST_RETURN_NON_NULL_TYPE });
         }
       },
     };
