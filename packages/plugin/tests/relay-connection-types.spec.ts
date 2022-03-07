@@ -50,6 +50,14 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
         pageInfo: PageInfo!
       }
     `,
+    /* GraphQL */ `
+      type PageInfo {
+        hasPreviousPage: Boolean!
+        hasNextPage: Boolean!
+        startCursor: String!
+        endCursor: String!
+      }
+    `,
   ],
   invalid: [
     {
@@ -103,12 +111,12 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
     {
       name: '`edges` field should return a list type that wraps an edge type',
       code: /* GraphQL */ `
-        type UserConnection {
-          edges: UserEdge
+        type AConnection {
+          edges: AEdge
           pageInfo: PageInfo!
         }
-        type PostConnection {
-          edges: PostEdge!
+        type BConnection {
+          edges: BEdge!
           pageInfo: PageInfo!
         }
       `,
@@ -139,6 +147,74 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
         }
       `,
       errors: 5,
+    },
+    {
+      code: 'directive @PageInfo on FIELD_DEFINITION',
+      errors: 1,
+    },
+    {
+      code: 'scalar PageInfo',
+      errors: 1,
+    },
+    {
+      code: /* GraphQL */ `
+        union PageInfo = UserConnection | Post
+        extend union PageInfo = Comment
+        type UserConnection {
+          edges: [UserEdge]
+          pageInfo: PageInfo!
+        }
+        type Post
+        type Comment
+      `,
+      errors: 2,
+    },
+    {
+      code: /* GraphQL */ `
+        input PageInfo
+        extend input PageInfo {
+          hasPreviousPage: Boolean!
+          hasNextPage: Boolean!
+          startCursor: String!
+          endCursor: String!
+        }
+      `,
+      errors: 2,
+    },
+    {
+      code: /* GraphQL */ `
+        enum PageInfo
+        extend enum PageInfo {
+          hasPreviousPage
+          hasNextPage
+          startCursor
+          endCursor
+        }
+      `,
+      errors: 2,
+    },
+    {
+      code: /* GraphQL */ `
+        interface PageInfo
+        extend interface PageInfo {
+          hasPreviousPage: Boolean!
+          hasNextPage: Boolean!
+          startCursor: String!
+          endCursor: String!
+        }
+      `,
+      errors: 2,
+    },
+    {
+      code: /* GraphQL */ `
+        extend type PageInfo {
+          hasPreviousPage: Boolean!
+          hasNextPage: Boolean!
+          startCursor: String!
+          endCursor: String!
+        }
+      `,
+      errors: 1,
     },
   ],
 });

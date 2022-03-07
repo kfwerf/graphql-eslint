@@ -144,27 +144,27 @@ exports[` 4`] = `
 exports[` 5`] = `
 Code
 
-      1 |         type UserConnection {
-      2 |           edges: UserEdge
+      1 |         type AConnection {
+      2 |           edges: AEdge
       3 |           pageInfo: PageInfo!
       4 |         }
-      5 |         type PostConnection {
-      6 |           edges: PostEdge!
+      5 |         type BConnection {
+      6 |           edges: BEdge!
       7 |           pageInfo: PageInfo!
       8 |         }
 
 ❌ Error 1/2
 
-      1 |         type UserConnection {
-    > 2 |           edges: UserEdge
-        |                  ^^^^^^^^ \`edges\` field must return a list type.
+      1 |         type AConnection {
+    > 2 |           edges: AEdge
+        |                  ^^^^^ \`edges\` field must return a list type.
       3 |           pageInfo: PageInfo!
 
 ❌ Error 2/2
 
-      5 |         type PostConnection {
-    > 6 |           edges: PostEdge!
-        |                  ^^^^^^^^ \`edges\` field must return a list type.
+      5 |         type BConnection {
+    > 6 |           edges: BEdge!
+        |                  ^^^^^ \`edges\` field must return a list type.
       7 |           pageInfo: PageInfo!
 `;
 
@@ -226,4 +226,131 @@ Code
     > 19 |           pageInfo: [PageInfo!]!
          |                     ^^^^^^^^^^^ \`pageInfo\` field must return a non-null \`PageInfo\` Object type.
       20 |         }
+`;
+
+exports[` 7`] = `
+❌ Error
+
+    > 1 | directive @PageInfo on FIELD_DEFINITION
+        |            ^^^^^^^^ \`PageInfo\` must be an Object type.
+`;
+
+exports[` 8`] = `
+❌ Error
+
+    > 1 | scalar PageInfo
+        |        ^^^^^^^^ \`PageInfo\` must be an Object type.
+`;
+
+exports[` 9`] = `
+Code
+
+      1 |         union PageInfo = UserConnection | Post
+      2 |         extend union PageInfo = Comment
+      3 |         type UserConnection {
+      4 |           edges: [UserEdge]
+      5 |           pageInfo: PageInfo!
+      6 |         }
+      7 |         type Post
+      8 |         type Comment
+
+❌ Error 1/2
+
+    > 1 |         union PageInfo = UserConnection | Post
+        |               ^^^^^^^^ \`PageInfo\` must be an Object type.
+      2 |         extend union PageInfo = Comment
+
+❌ Error 2/2
+
+      1 |         union PageInfo = UserConnection | Post
+    > 2 |         extend union PageInfo = Comment
+        |                      ^^^^^^^^ \`PageInfo\` must be an Object type.
+      3 |         type UserConnection {
+`;
+
+exports[` 10`] = `
+Code
+
+      1 |         input PageInfo
+      2 |         extend input PageInfo {
+      3 |           hasPreviousPage: Boolean!
+      4 |           hasNextPage: Boolean!
+      5 |           startCursor: String!
+      6 |           endCursor: String!
+      7 |         }
+
+❌ Error 1/2
+
+    > 1 |         input PageInfo
+        |               ^^^^^^^^ \`PageInfo\` must be an Object type.
+      2 |         extend input PageInfo {
+
+❌ Error 2/2
+
+      1 |         input PageInfo
+    > 2 |         extend input PageInfo {
+        |                      ^^^^^^^^ \`PageInfo\` must be an Object type.
+      3 |           hasPreviousPage: Boolean!
+`;
+
+exports[` 11`] = `
+Code
+
+      1 |         enum PageInfo
+      2 |         extend enum PageInfo {
+      3 |           hasPreviousPage
+      4 |           hasNextPage
+      5 |           startCursor
+      6 |           endCursor
+      7 |         }
+
+❌ Error 1/2
+
+    > 1 |         enum PageInfo
+        |              ^^^^^^^^ \`PageInfo\` must be an Object type.
+      2 |         extend enum PageInfo {
+
+❌ Error 2/2
+
+      1 |         enum PageInfo
+    > 2 |         extend enum PageInfo {
+        |                     ^^^^^^^^ \`PageInfo\` must be an Object type.
+      3 |           hasPreviousPage
+`;
+
+exports[` 12`] = `
+Code
+
+      1 |         interface PageInfo
+      2 |         extend interface PageInfo {
+      3 |           hasPreviousPage: Boolean!
+      4 |           hasNextPage: Boolean!
+      5 |           startCursor: String!
+      6 |           endCursor: String!
+      7 |         }
+
+❌ Error 1/2
+
+    > 1 |         interface PageInfo
+        |                   ^^^^^^^^ \`PageInfo\` must be an Object type.
+      2 |         extend interface PageInfo {
+
+❌ Error 2/2
+
+      1 |         interface PageInfo
+    > 2 |         extend interface PageInfo {
+        |                          ^^^^^^^^ \`PageInfo\` must be an Object type.
+      3 |           hasPreviousPage: Boolean!
+`;
+
+exports[` 13`] = `
+❌ Error
+
+    > 1 |         extend type PageInfo {
+        |                     ^^^^^^^^ \`PageInfo\` must be an Object type.
+      2 |           hasPreviousPage: Boolean!
+      3 |           hasNextPage: Boolean!
+      4 |           startCursor: String!
+      5 |           endCursor: String!
+      6 |         }
 `;

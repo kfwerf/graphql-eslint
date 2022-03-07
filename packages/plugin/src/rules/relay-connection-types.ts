@@ -115,8 +115,10 @@ const rule: GraphQLESLintRule = {
       // PageInfo
       [PAGE_INFO_TYPE_MUST_EXIST]: 'The server must provide a `PageInfo` Object type.',
       [PAGE_INFO_TYPE_MUST_BE_OBJECT_TYPE]: '`PageInfo` must be an Object type.',
-      [PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_PAGE]: '`PageInfo` must contain a field `{{ fieldName }}`, which return non-null booleans.',
-      [PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_CURSOR]: '`PageInfo` must contain fields `{{ fieldName }}`, which return non-null opaque strings.',
+      [PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_PAGE]:
+        '`PageInfo` must contain a field `{{ fieldName }}`, which return non-null booleans.',
+      [PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_CURSOR]:
+        '`PageInfo` must contain fields `{{ fieldName }}`, which return non-null opaque strings.',
     },
     schema: [],
   },
@@ -157,6 +159,9 @@ const rule: GraphQLESLintRule = {
         if (!isNonNullPageInfoType) {
           report({ node, messageId: PAGE_INFO_FIELD_MUST_RETURN_NON_NULL_TYPE });
         }
+      },
+      [`:matches(${NON_OBJECT_TYPES})[name.value=PageInfo] > .name`](node) {
+        report({ node, messageId: PAGE_INFO_TYPE_MUST_BE_OBJECT_TYPE });
       },
     };
   },
