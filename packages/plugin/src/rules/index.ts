@@ -19,6 +19,7 @@ import noTypenamePrefix from './no-typename-prefix';
 import noUnreachableTypes from './no-unreachable-types';
 import noUnusedFields from './no-unused-fields';
 import relayConnectionTypes from './relay-connection-types';
+import relayPageInfo from './relay-page-info';
 import requireDeprecationDate from './require-deprecation-date';
 import requireDeprecationReason from './require-deprecation-reason';
 import requireDescription from './require-description';
@@ -47,6 +48,7 @@ export const rules = {
   'no-unreachable-types': noUnreachableTypes,
   'no-unused-fields': noUnusedFields,
   'relay-connection-types': relayConnectionTypes,
+  'relay-page-info': relayPageInfo,
   'require-deprecation-date': requireDeprecationDate,
   'require-deprecation-reason': requireDeprecationReason,
   'require-description': requireDescription,

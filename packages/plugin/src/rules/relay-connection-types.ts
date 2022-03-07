@@ -6,15 +6,10 @@ const MUST_BE_OBJECT_TYPE = 'MUST_BE_OBJECT_TYPE';
 const MUST_CONTAIN_FIELD_EDGES = 'MUST_CONTAIN_FIELD_EDGES';
 const MUST_CONTAIN_FIELD_PAGE_INFO = 'MUST_CONTAIN_FIELD_PAGE_INFO';
 const MUST_HAVE_CONNECTION_SUFFIX = 'MUST_HAVE_CONNECTION_SUFFIX';
-const EDGES_MUST_RETURN_LIST_TYPE = 'EDGES_MUST_RETURN_LIST_TYPE';
+const EDGES_FIELD_MUST_RETURN_LIST_TYPE = 'EDGES_FIELD_MUST_RETURN_LIST_TYPE';
 const PAGE_INFO_FIELD_MUST_RETURN_NON_NULL_TYPE = 'PAGE_INFO_FIELD_MUST_RETURN_NON_NULL_TYPE';
 
-const PAGE_INFO_TYPE_MUST_EXIST = 'PAGE_INFO_TYPE_MUST_EXIST';
-const PAGE_INFO_TYPE_MUST_BE_OBJECT_TYPE = 'PAGE_INFO_TYPE_MUST_BE_OBJECT_TYPE';
-const PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_PAGE = 'PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_PAGE';
-const PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_CURSOR = 'PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_CURSOR';
-
-const NON_OBJECT_TYPES = [
+export const NON_OBJECT_TYPES = [
   Kind.DIRECTIVE_DEFINITION,
   Kind.SCALAR_TYPE_DEFINITION,
   Kind.UNION_TYPE_DEFINITION,
@@ -28,7 +23,7 @@ const NON_OBJECT_TYPES = [
   Kind.OBJECT_TYPE_EXTENSION,
 ];
 
-const nonConnectionTypesSelector = `:matches(${NON_OBJECT_TYPES})[name.value=/Connection$/] > .name`;
+const notConnectionTypesSelector = `:matches(${NON_OBJECT_TYPES})[name.value=/Connection$/] > .name`;
 
 const hasEdgesField = (node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) =>
   node.fields.some(field => field.name.value === 'edges');
@@ -73,12 +68,6 @@ const rule: GraphQLESLintRule = {
           '- `last` takes a non-negative integer',
           '- `before` takes the Cursor type',
         ].join('\n'),
-        '### PageInfo',
-        [
-          '- `PageInfo` must be an Object type',
-          '- `PageInfo` must contain fields `hasPreviousPage` and `hasNextPage`, which return non-null booleans',
-          '- `PageInfo` must contain fields `startCursor` and `endCursor`, which return non-null opaque strings',
-        ].join('\n'),
       ].join('\n\n'),
       url: 'https://github.com/dotansimha/graphql-eslint/blob/master/docs/rules/relay-connection-types.md',
       isDisabledForAllConfig: true,
@@ -110,34 +99,27 @@ const rule: GraphQLESLintRule = {
       [MUST_CONTAIN_FIELD_EDGES]: 'Connection type must contain a field `edges` that return a list type.',
       [MUST_CONTAIN_FIELD_PAGE_INFO]:
         'Connection type must contain a field `pageInfo` that return a non-null `PageInfo` Object type.',
-      [EDGES_MUST_RETURN_LIST_TYPE]: '`edges` field must return a list type.',
+      [EDGES_FIELD_MUST_RETURN_LIST_TYPE]: '`edges` field must return a list type.',
       [PAGE_INFO_FIELD_MUST_RETURN_NON_NULL_TYPE]: '`pageInfo` field must return a non-null `PageInfo` Object type.',
-      // PageInfo
-      [PAGE_INFO_TYPE_MUST_EXIST]: 'The server must provide a `PageInfo` Object type.',
-      [PAGE_INFO_TYPE_MUST_BE_OBJECT_TYPE]: '`PageInfo` must be an Object type.',
-      [PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_PAGE]:
-        '`PageInfo` must contain a field `{{ fieldName }}`, that return non-null boolean.',
-      [PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_CURSOR]:
-        '`PageInfo` must contain a field `{{ fieldName }}`, that return non-null opaque string.',
     },
     schema: [],
   },
-  create({ report }) {
+  create(context) {
     return {
-      [nonConnectionTypesSelector](node) {
-        report({ node, messageId: MUST_BE_OBJECT_TYPE });
+      [notConnectionTypesSelector](node) {
+        context.report({ node, messageId: MUST_BE_OBJECT_TYPE });
       },
       'ObjectTypeDefinition[name.value!=/Connection$/]'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) {
         if (hasEdgesField(node) && hasPageInfoField(node)) {
-          report({ node: node.name, messageId: MUST_HAVE_CONNECTION_SUFFIX });
+          context.report({ node: node.name, messageId: MUST_HAVE_CONNECTION_SUFFIX });
         }
       },
       'ObjectTypeDefinition[name.value=/Connection$/]'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) {
         if (!hasEdgesField(node)) {
-          report({ node: node.name, messageId: MUST_CONTAIN_FIELD_EDGES });
+          context.report({ node: node.name, messageId: MUST_CONTAIN_FIELD_EDGES });
         }
         if (!hasPageInfoField(node)) {
-          report({ node: node.name, messageId: MUST_CONTAIN_FIELD_PAGE_INFO });
+          context.report({ node: node.name, messageId: MUST_CONTAIN_FIELD_PAGE_INFO });
         }
       },
       'ObjectTypeDefinition[name.value=/Connection$/] > FieldDefinition[name.value=edges] > .gqlType'(
@@ -146,7 +128,7 @@ const rule: GraphQLESLintRule = {
         const isListType =
           node.kind === Kind.LIST_TYPE || (node.kind === Kind.NON_NULL_TYPE && node.gqlType.kind === Kind.LIST_TYPE);
         if (!isListType) {
-          report({ node, messageId: EDGES_MUST_RETURN_LIST_TYPE });
+          context.report({ node, messageId: EDGES_FIELD_MUST_RETURN_LIST_TYPE });
         }
       },
       'ObjectTypeDefinition[name.value=/Connection$/] > FieldDefinition[name.value=pageInfo] > .gqlType'(
@@ -157,43 +139,7 @@ const rule: GraphQLESLintRule = {
           node.gqlType.kind === Kind.NAMED_TYPE &&
           node.gqlType.name.value === 'PageInfo';
         if (!isNonNullPageInfoType) {
-          report({ node, messageId: PAGE_INFO_FIELD_MUST_RETURN_NON_NULL_TYPE });
-        }
-      },
-      [`:matches(${NON_OBJECT_TYPES})[name.value=PageInfo] > .name`](node) {
-        report({ node, messageId: PAGE_INFO_TYPE_MUST_BE_OBJECT_TYPE });
-      },
-      'ObjectTypeDefinition[name.value=PageInfo]'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) {
-        const fieldMap = Object.fromEntries(node.fields.map(field => [field.name.value, field]));
-        for (const fieldName of ['hasPreviousPage', 'hasNextPage']) {
-          const field = fieldMap[fieldName];
-          const isNonNullBoolean =
-            field &&
-            field.gqlType.kind === Kind.NON_NULL_TYPE &&
-            field.gqlType.gqlType.kind === Kind.NAMED_TYPE &&
-            field.gqlType.gqlType.name.value === 'Boolean';
-          if (!isNonNullBoolean) {
-            report({
-              node: field ? field.gqlType : node.name,
-              messageId: PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_PAGE,
-              data: { fieldName },
-            });
-          }
-        }
-        for (const fieldName of ['startCursor', 'endCursor']) {
-          const field = fieldMap[fieldName];
-          const isNonNullString =
-            field &&
-            field.gqlType.kind === Kind.NON_NULL_TYPE &&
-            field.gqlType.gqlType.kind === Kind.NAMED_TYPE &&
-            field.gqlType.gqlType.name.value === 'String';
-          if (!isNonNullString) {
-            report({
-              node: field ? field.gqlType : node.name,
-              messageId: PAGE_INFO_TYPE_MUST_CONTAIN_FIELD_CURSOR,
-              data: { fieldName },
-            });
-          }
+          context.report({ node, messageId: PAGE_INFO_FIELD_MUST_RETURN_NON_NULL_TYPE });
         }
       },
     };
