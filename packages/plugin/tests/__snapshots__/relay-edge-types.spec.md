@@ -180,3 +180,25 @@ Code
          |                  ^^^^^^ A list type should only wrap an edge type.
       13 |         }
 `;
+
+exports[` 6`] = `
+⚙️ Options
+
+    {
+      "shouldImplementsNode": true
+    }
+
+❌ Error
+
+       1 |         type User {
+       2 |           id: ID!
+       3 |         }
+    >  4 |         type AEdge {
+         |              ^^^^^ Edge type's field \`node\` must implements \`Node\` interface.
+       5 |           node: User!
+       6 |           cursor: String!
+       7 |         }
+       8 |         type AConnection {
+       9 |           edges: [AEdge]
+      10 |         }
+`;

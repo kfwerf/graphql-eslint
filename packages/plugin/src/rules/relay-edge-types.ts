@@ -19,6 +19,7 @@ const RULE_ID = 'relay-edge-types';
 const MESSAGE_MUST_BE_OBJECT_TYPE = 'MESSAGE_MUST_BE_OBJECT_TYPE';
 const MESSAGE_MISSING_EDGE_SUFFIX = 'MESSAGE_MISSING_EDGE_SUFFIX';
 const MESSAGE_LIST_TYPE_ONLY_EDGE_TYPE = 'MESSAGE_LIST_TYPE_ONLY_EDGE_TYPE';
+const MESSAGE_SHOULD_IMPLEMENTS_NODE = 'MESSAGE_SHOULD_IMPLEMENTS_NODE';
 
 type EdgeTypes = Set<string>;
 let edgeTypesCache: EdgeTypes;
@@ -94,6 +95,7 @@ const rule: GraphQLESLintRule<[EdgeTypesConfig], true> = {
       [MESSAGE_MUST_BE_OBJECT_TYPE]: 'Edge type must be an Object type.',
       [MESSAGE_MISSING_EDGE_SUFFIX]: 'Edge type must have "Edge" suffix.',
       [MESSAGE_LIST_TYPE_ONLY_EDGE_TYPE]: 'A list type should only wrap an edge type.',
+      [MESSAGE_SHOULD_IMPLEMENTS_NODE]: "Edge type's field `node` must implements `Node` interface.",
     },
     schema: {
       type: 'array',
@@ -140,6 +142,16 @@ const rule: GraphQLESLintRule<[EdgeTypesConfig], true> = {
         });
       } else if (!isNamedOrNonNullNamed(nodeField.gqlType)) {
         context.report({ node: nodeField.name, message: `Field \`node\` must ${message}` });
+      }
+
+      if (options.shouldImplementsNode) {
+        const nodeReturnTypeName = getTypeName(nodeField.gqlType.rawNode());
+        const implementsNode = (schema.getType(nodeReturnTypeName) as any).astNode.interfaces.some(
+          n => n.name.value === 'Node'
+        );
+        if (!implementsNode) {
+          context.report({ node: node.name, messageId: MESSAGE_SHOULD_IMPLEMENTS_NODE });
+        }
       }
     };
 

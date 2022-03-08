@@ -53,6 +53,25 @@ ruleTester.runGraphQLTests<[EdgeTypesConfig], true>('relay-edge-types', rule, {
         }
       `),
     },
+    {
+      name: 'should implements Node',
+      options: [{ shouldImplementsNode: true }],
+      ...useSchema(/* GraphQL */ `
+        interface Node {
+          id: ID!
+        }
+        type User implements Node {
+          id: ID!
+        }
+        type AEdge {
+          node: User!
+          cursor: String!
+        }
+        type AConnection {
+          edges: [AEdge]
+        }
+      `),
+    },
   ],
   invalid: [
     {
@@ -145,6 +164,23 @@ ruleTester.runGraphQLTests<[EdgeTypesConfig], true>('relay-edge-types', rule, {
         }
       `),
       errors: 4,
+    },
+    {
+      name: 'should implements Node',
+      options: [{ shouldImplementsNode: true }],
+      ...useSchema(/* GraphQL */ `
+        type User {
+          id: ID!
+        }
+        type AEdge {
+          node: User!
+          cursor: String!
+        }
+        type AConnection {
+          edges: [AEdge]
+        }
+      `),
+      errors: 1,
     },
   ],
 });
