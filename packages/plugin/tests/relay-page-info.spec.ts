@@ -89,17 +89,15 @@ ruleTester.runGraphQLTests('relay-page-info', rule, {
     {
       name: 'when extend type',
       ...useSchema(/* GraphQL */ `
-        type PageInfo {
+        type PageInfo
+        extend type PageInfo {
           hasPreviousPage: Boolean!
           hasNextPage: Boolean!
           startCursor: String!
           endCursor: String!
         }
-        extend type PageInfo {
-          foo: Int
-        }
       `),
-      errors: 1,
+      errors: 4,
     },
     {
       name: 'when fields is missing or incorrect return type',
@@ -113,7 +111,7 @@ ruleTester.runGraphQLTests('relay-page-info', rule, {
     },
     {
       name: 'when `PageInfo` is missing',
-      ...useSchema('type Query { foo: Int }'),
+      ...useSchema('type Query'),
       errors: 1,
     },
   ],

@@ -20,7 +20,6 @@ export const NON_OBJECT_TYPES = [
   Kind.ENUM_TYPE_EXTENSION,
   Kind.INTERFACE_TYPE_DEFINITION,
   Kind.INTERFACE_TYPE_EXTENSION,
-  Kind.OBJECT_TYPE_EXTENSION,
 ];
 
 const notConnectionTypesSelector = `:matches(${NON_OBJECT_TYPES})[name.value=/Connection$/] > .name`;
@@ -99,12 +98,16 @@ const rule: GraphQLESLintRule = {
       [notConnectionTypesSelector](node) {
         context.report({ node, messageId: MUST_BE_OBJECT_TYPE });
       },
-      'ObjectTypeDefinition[name.value!=/Connection$/]'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) {
+      ':matches(ObjectTypeDefinition, ObjectTypeExtension)[name.value!=/Connection$/]'(
+        node: GraphQLESTreeNode<ObjectTypeDefinitionNode>
+      ) {
         if (hasEdgesField(node) && hasPageInfoField(node)) {
           context.report({ node: node.name, messageId: MUST_HAVE_CONNECTION_SUFFIX });
         }
       },
-      'ObjectTypeDefinition[name.value=/Connection$/]'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode>) {
+      ':matches(ObjectTypeDefinition, ObjectTypeExtension)[name.value=/Connection$/]'(
+        node: GraphQLESTreeNode<ObjectTypeDefinitionNode>
+      ) {
         if (!hasEdgesField(node)) {
           context.report({ node: node.name, messageId: MUST_CONTAIN_FIELD_EDGES });
         }
@@ -112,7 +115,7 @@ const rule: GraphQLESLintRule = {
           context.report({ node: node.name, messageId: MUST_CONTAIN_FIELD_PAGE_INFO });
         }
       },
-      'ObjectTypeDefinition[name.value=/Connection$/] > FieldDefinition[name.value=edges] > .gqlType'(
+      ':matches(ObjectTypeDefinition, ObjectTypeExtension)[name.value=/Connection$/] > FieldDefinition[name.value=edges] > .gqlType'(
         node: GraphQLESTreeNode<TypeNode>
       ) {
         const isListType =
@@ -121,7 +124,7 @@ const rule: GraphQLESLintRule = {
           context.report({ node, messageId: EDGES_FIELD_MUST_RETURN_LIST_TYPE });
         }
       },
-      'ObjectTypeDefinition[name.value=/Connection$/] > FieldDefinition[name.value=pageInfo] > .gqlType'(
+      ':matches(ObjectTypeDefinition, ObjectTypeExtension)[name.value=/Connection$/] > FieldDefinition[name.value=pageInfo] > .gqlType'(
         node: GraphQLESTreeNode<TypeNode>
       ) {
         const isNonNullPageInfoType =

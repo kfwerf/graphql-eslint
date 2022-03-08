@@ -3,15 +3,6 @@ import rule from '../src/rules/relay-connection-types';
 
 const ruleTester = new GraphQLRuleTester();
 
-function useSchema(code: string): { code: string; parserOptions: ParserOptions } {
-  return {
-    code,
-    parserOptions: {
-      schema: code,
-    },
-  };
-}
-
 ruleTester.runGraphQLTests('relay-connection-types', rule, {
   valid: [
     {
@@ -50,6 +41,12 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
         pageInfo: PageInfo!
       }
     `,
+    /* GraphQL */ `
+      extend type UserConnection {
+        edges: [UserEdge]
+        pageInfo: PageInfo!
+      }
+    `,
   ],
   invalid: [
     {
@@ -57,7 +54,7 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
       code: /* GraphQL */ `
         directive @directiveConnection(role: [RoleConnection!]!) on FIELD_DEFINITION
         scalar DateTimeConnection
-        union DataConnection = UserConnection | Post
+        union DataConnection = Post
         extend union DataConnection = Comment
         input CreateUserConnection
         extend input CreateUserConnection {
@@ -71,14 +68,10 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
         extend interface NodeConnection {
           id: ID!
         }
-        extend type UserConnection {
-          role: RoleConnection
-        }
-        type UserConnection
         type Post
         type Comment
       `,
-      errors: 13,
+      errors: 10,
     },
     {
       name: 'should report about missing `Connection` suffix',

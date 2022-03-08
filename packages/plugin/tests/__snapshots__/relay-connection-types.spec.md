@@ -5,7 +5,7 @@ Code
 
        1 |         directive @directiveConnection(role: [RoleConnection!]!) on FIELD_DEFINITION
        2 |         scalar DateTimeConnection
-       3 |         union DataConnection = UserConnection | Post
+       3 |         union DataConnection = Post
        4 |         extend union DataConnection = Comment
        5 |         input CreateUserConnection
        6 |         extend input CreateUserConnection {
@@ -19,102 +19,77 @@ Code
       14 |         extend interface NodeConnection {
       15 |           id: ID!
       16 |         }
-      17 |         extend type UserConnection {
-      18 |           role: RoleConnection
-      19 |         }
-      20 |         type UserConnection
-      21 |         type Post
-      22 |         type Comment
+      17 |         type Post
+      18 |         type Comment
 
-❌ Error 1/13
+❌ Error 1/10
 
     > 1 |         directive @directiveConnection(role: [RoleConnection!]!) on FIELD_DEFINITION
         |                    ^^^^^^^^^^^^^^^^^^^ Connection type must be an Object type.
       2 |         scalar DateTimeConnection
 
-❌ Error 2/13
+❌ Error 2/10
 
       1 |         directive @directiveConnection(role: [RoleConnection!]!) on FIELD_DEFINITION
     > 2 |         scalar DateTimeConnection
         |                ^^^^^^^^^^^^^^^^^^ Connection type must be an Object type.
-      3 |         union DataConnection = UserConnection | Post
+      3 |         union DataConnection = Post
 
-❌ Error 3/13
+❌ Error 3/10
 
       2 |         scalar DateTimeConnection
-    > 3 |         union DataConnection = UserConnection | Post
+    > 3 |         union DataConnection = Post
         |               ^^^^^^^^^^^^^^ Connection type must be an Object type.
       4 |         extend union DataConnection = Comment
 
-❌ Error 4/13
+❌ Error 4/10
 
-      3 |         union DataConnection = UserConnection | Post
+      3 |         union DataConnection = Post
     > 4 |         extend union DataConnection = Comment
         |                      ^^^^^^^^^^^^^^ Connection type must be an Object type.
       5 |         input CreateUserConnection
 
-❌ Error 5/13
+❌ Error 5/10
 
       4 |         extend union DataConnection = Comment
     > 5 |         input CreateUserConnection
         |               ^^^^^^^^^^^^^^^^^^^^ Connection type must be an Object type.
       6 |         extend input CreateUserConnection {
 
-❌ Error 6/13
+❌ Error 6/10
 
       5 |         input CreateUserConnection
     > 6 |         extend input CreateUserConnection {
         |                      ^^^^^^^^^^^^^^^^^^^^ Connection type must be an Object type.
       7 |           firstName: String
 
-❌ Error 7/13
+❌ Error 7/10
 
        8 |         }
     >  9 |         enum RoleConnection
          |              ^^^^^^^^^^^^^^ Connection type must be an Object type.
       10 |         extend enum RoleConnection {
 
-❌ Error 8/13
+❌ Error 8/10
 
        9 |         enum RoleConnection
     > 10 |         extend enum RoleConnection {
          |                     ^^^^^^^^^^^^^^ Connection type must be an Object type.
       11 |           ADMIN
 
-❌ Error 9/13
+❌ Error 9/10
 
       12 |         }
     > 13 |         interface NodeConnection
          |                   ^^^^^^^^^^^^^^ Connection type must be an Object type.
       14 |         extend interface NodeConnection {
 
-❌ Error 10/13
+❌ Error 10/10
 
       13 |         interface NodeConnection
     > 14 |         extend interface NodeConnection {
          |                          ^^^^^^^^^^^^^^ Connection type must be an Object type.
       15 |           id: ID!
-
-❌ Error 11/13
-
-      16 |         }
-    > 17 |         extend type UserConnection {
-         |                     ^^^^^^^^^^^^^^ Connection type must be an Object type.
-      18 |           role: RoleConnection
-
-❌ Error 12/13
-
-      19 |         }
-    > 20 |         type UserConnection
-         |              ^^^^^^^^^^^^^^ Connection type must contain a field \`edges\` that return a list type.
-      21 |         type Post
-
-❌ Error 13/13
-
-      19 |         }
-    > 20 |         type UserConnection
-         |              ^^^^^^^^^^^^^^ Connection type must contain a field \`pageInfo\` that return a non-null \`PageInfo\` Object type.
-      21 |         type Post
 `;
 
 exports[` 2`] = `

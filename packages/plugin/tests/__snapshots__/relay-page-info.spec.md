@@ -126,18 +126,39 @@ Code
 `;
 
 exports[` 7`] = `
-❌ Error
+Code
 
-      1 |         type PageInfo {
-      2 |           hasPreviousPage: Boolean!
-      3 |           hasNextPage: Boolean!
-      4 |           startCursor: String!
-      5 |           endCursor: String!
-      6 |         }
-    > 7 |         extend type PageInfo {
-        |                     ^^^^^^^^ \`PageInfo\` must be an Object type.
-      8 |           foo: Int
-      9 |         }
+      1 |         type PageInfo
+      2 |         extend type PageInfo {
+      3 |           hasPreviousPage: Boolean!
+      4 |           hasNextPage: Boolean!
+      5 |           startCursor: String!
+      6 |           endCursor: String!
+      7 |         }
+
+❌ Error 1/4
+
+    > 1 |         type PageInfo
+        |              ^^^^^^^^ \`PageInfo\` must contain a field \`hasPreviousPage\`, that return non-null boolean.
+      2 |         extend type PageInfo {
+
+❌ Error 2/4
+
+    > 1 |         type PageInfo
+        |              ^^^^^^^^ \`PageInfo\` must contain a field \`hasNextPage\`, that return non-null boolean.
+      2 |         extend type PageInfo {
+
+❌ Error 3/4
+
+    > 1 |         type PageInfo
+        |              ^^^^^^^^ \`PageInfo\` must contain a field \`startCursor\`, that return non-null opaque string.
+      2 |         extend type PageInfo {
+
+❌ Error 4/4
+
+    > 1 |         type PageInfo
+        |              ^^^^^^^^ \`PageInfo\` must contain a field \`endCursor\`, that return non-null opaque string.
+      2 |         extend type PageInfo {
 `;
 
 exports[` 8`] = `
@@ -178,6 +199,6 @@ Code
 exports[` 9`] = `
 ❌ Error
 
-    > 1 | type Query { foo: Int }
+    > 1 | type Query
         | ^ The server must provide a \`PageInfo\` object.
 `;
