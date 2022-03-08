@@ -7,26 +7,10 @@
 
 Set of rules to follow Relay specification for Connection types.
 
-### Connection types
-
 - Any type whose name ends in "Connection" is considered by spec to be a `Connection type`
 - Connection type must be an Object type
 - Connection type must contain a field `edges` that return a list type which wraps an edge type
 - Connection type must contain a field `pageInfo` that return a non-null `PageInfo` Object type
-
-### Arguments
-
-- A field that returns a Connection type must include forward pagination arguments, backward pagination arguments, or both
-
-Forward pagination arguments
-
-- `first` takes a non-negative integer
-- `after` takes the Cursor type
-
-Backward pagination arguments
-
-- `last` takes a non-negative integer
-- `before` takes the Cursor type
 
 ## Usage Examples
 

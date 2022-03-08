@@ -73,7 +73,7 @@ const rule: GraphQLESLintRule<[EdgeTypesConfig], true> = {
         '- Edge type must contain a field `node` that return either a Scalar, Enum, Object, Interface, Union, or a non-null wrapper around one of those types. Notably, this field cannot return a list',
         '- Edge type must contain a field `cursor` that return a String, Scalar, or a non-null wrapper wrapper around one of those types',
         '- Edge type name must end in "Edge" _(optional)_',
-        "- Edge type's field `node` must implements `Node` interface _(optional)_",
+        "- Edge type's field `node` must implement `Node` interface _(optional)_",
         '- A list type should only wrap an edge type _(optional)_',
       ].join('\n'),
       url: `https://github.com/dotansimha/graphql-eslint/blob/master/docs/rules/${RULE_ID}.md`,
