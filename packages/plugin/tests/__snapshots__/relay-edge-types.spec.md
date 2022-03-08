@@ -31,28 +31,28 @@ Code
 
        8 |         type AConnection {
     >  9 |           edges: [AEdge]
-         |                   ^^^^^ Edge type must be an Object type
+         |                   ^^^^^ Edge type must be an Object type.
       10 |           pageInfo: PageInfo!
 
 ❌ Error 2/4
 
       12 |         extend type BConnection {
     > 13 |           edges: [BEdge!]
-         |                   ^^^^^ Edge type must be an Object type
+         |                   ^^^^^ Edge type must be an Object type.
       14 |           pageInfo: PageInfo!
 
 ❌ Error 3/4
 
       16 |         type CConnection {
     > 17 |           edges: [CEdge]!
-         |                   ^^^^^ Edge type must be an Object type
+         |                   ^^^^^ Edge type must be an Object type.
       18 |           pageInfo: PageInfo!
 
 ❌ Error 4/4
 
       20 |         extend type DConnection {
     > 21 |           edges: [DEdge!]!
-         |                   ^^^^^ Edge type must be an Object type
+         |                   ^^^^^ Edge type must be an Object type.
       22 |           pageInfo: PageInfo!
 `;
 
@@ -107,4 +107,24 @@ Code
     > 4 |           cursor: [PageInfo!]!
         |           ^^^^^^ Field \`cursor\` must return either a String, Scalar, or a non-null wrapper wrapper around one of those types.
       5 |         }
+`;
+
+exports[` 4`] = `
+⚙️ Options
+
+    {
+      "withEdgeSuffix": true
+    }
+
+❌ Error
+
+      1 |         scalar Email
+    > 2 |         type Aedge {
+        |              ^^^^^ Edge type must have "Edge" suffix.
+      3 |           node: Email!
+      4 |           cursor: Email!
+      5 |         }
+      6 |         type AConnection {
+      7 |           edges: [Aedge]
+      8 |         }
 `;

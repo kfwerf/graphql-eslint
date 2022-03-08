@@ -16,6 +16,7 @@ import { GraphQLESTreeNode } from '../estree-parser';
 
 const RULE_ID = 'relay-edge-types';
 const MESSAGE_MUST_BE_OBJECT_TYPE = 'MESSAGE_MUST_BE_OBJECT_TYPE';
+const MESSAGE_MISSING_EDGE_SUFFIX = 'MESSAGE_MISSING_EDGE_SUFFIX';
 
 type EdgeTypes = Set<string>;
 let edgeTypesCache: EdgeTypes;
@@ -50,7 +51,13 @@ function getEdgeTypes(schema: GraphQLSchema): EdgeTypes {
   return edgeTypesCache;
 }
 
-const rule: GraphQLESLintRule = {
+export type EdgeTypesConfig = {
+  withEdgeSuffix?: boolean;
+  shouldImplementsNode?: boolean;
+  listTypeCanWrapOnlyEdgeType?: boolean;
+};
+
+const rule: GraphQLESLintRule<[EdgeTypesConfig], true> = {
   meta: {
     type: 'problem',
     docs: {
@@ -82,13 +89,39 @@ const rule: GraphQLESLintRule = {
       ],
     },
     messages: {
-      [MESSAGE_MUST_BE_OBJECT_TYPE]: 'Edge type must be an Object type',
+      [MESSAGE_MUST_BE_OBJECT_TYPE]: 'Edge type must be an Object type.',
+      [MESSAGE_MISSING_EDGE_SUFFIX]: 'Edge type must have "Edge" suffix.',
     },
-    schema: [],
+    schema: {
+      type: 'array',
+      maxItems: 1,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          withEdgeSuffix: {
+            type: 'boolean',
+            default: false,
+            description: `Edge type name must end in "Edge".`,
+          },
+          shouldImplementsNode: {
+            type: 'boolean',
+            default: false,
+            description: "Edge type's field `node` must implements `Node` interface.",
+          },
+          listTypeCanWrapOnlyEdgeType: {
+            type: 'boolean',
+            default: false,
+            description: 'A list type should only wrap an edge type.',
+          },
+        },
+      },
+    },
   },
   create(context) {
     const schema = requireGraphQLSchemaFromContext(RULE_ID, context);
     const edgeTypes = getEdgeTypes(schema);
+    const options = context.options[0] || {};
 
     const isNamedOrNonNullNamed = (node: GraphQLESTreeNode<TypeNode>): boolean =>
       node.kind === Kind.NAMED_TYPE || (node.kind === Kind.NON_NULL_TYPE && node.gqlType.kind === Kind.NAMED_TYPE);
@@ -136,11 +169,14 @@ const rule: GraphQLESLintRule = {
         }
       },
       ':matches(ObjectTypeDefinition, ObjectTypeExtension)'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode, true>) {
-        if (!edgeTypes.has(node.name.value)) {
-          return;
+        const typeName = node.name.value
+        if (edgeTypes.has(typeName)) {
+          checkNodeField(node);
+          checkCursorField(node);
+          if (options.withEdgeSuffix && !typeName.endsWith('Edge')) {
+            context.report({ node: node.name, messageId: MESSAGE_MISSING_EDGE_SUFFIX });
+          }
         }
-        checkNodeField(node);
-        checkCursorField(node);
       },
     };
   },

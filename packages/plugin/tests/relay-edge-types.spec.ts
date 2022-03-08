@@ -1,5 +1,5 @@
 import { GraphQLRuleTester, ParserOptions } from '../src';
-import rule from '../src/rules/relay-edge-types';
+import rule, { EdgeTypesConfig } from '../src/rules/relay-edge-types';
 
 const ruleTester = new GraphQLRuleTester();
 
@@ -12,7 +12,7 @@ function useSchema(code: string): { code: string; parserOptions: ParserOptions }
   };
 }
 
-ruleTester.runGraphQLTests('relay-edge-types', rule, {
+ruleTester.runGraphQLTests<[EdgeTypesConfig], true>('relay-edge-types', rule, {
   valid: [
     {
       name: 'when cursor returns string',
@@ -28,6 +28,20 @@ ruleTester.runGraphQLTests('relay-edge-types', rule, {
     },
     {
       name: 'cursor returns scalar',
+      ...useSchema(/* GraphQL */ `
+        scalar Email
+        type AEdge {
+          node: Email!
+          cursor: Email!
+        }
+        type AConnection {
+          edges: [AEdge]
+        }
+      `),
+    },
+    {
+      name: 'with Edge suffix',
+      options: [{ withEdgeSuffix: true }],
       ...useSchema(/* GraphQL */ `
         scalar Email
         type AEdge {
@@ -80,7 +94,7 @@ ruleTester.runGraphQLTests('relay-edge-types', rule, {
           pageInfo: PageInfo!
         }
       `),
-      errors: 2
+      errors: 2,
     },
     {
       name: 'should report when list is used',
@@ -95,36 +109,22 @@ ruleTester.runGraphQLTests('relay-edge-types', rule, {
           pageInfo: PageInfo!
         }
       `),
-      errors: 2
+      errors: 2,
     },
-    // {
-    //   name: 'Edge type must be Object type',
-    //   ...useSchema(/* GraphQL */ `
-    //     type PageInfo
-    //     type BConnection
-    //     type DConnection
-    //     scalar AEdge
-    //     union BEdge = PageInfo
-    //     enum CEdge
-    //     interface DEdge
-    //     type AConnection {
-    //       edges: [AEdge]
-    //       pageInfo: PageInfo!
-    //     }
-    //     extend type BConnection {
-    //       edges: [BEdge!]
-    //       pageInfo: PageInfo!
-    //     }
-    //     type CConnection {
-    //       edges: [CEdge]!
-    //       pageInfo: PageInfo!
-    //     }
-    //     extend type DConnection {
-    //       edges: [DEdge!]!
-    //       pageInfo: PageInfo!
-    //     }
-    //   `),
-    //   errors: 2,
-    // },
+    {
+      name: 'without Edge suffix',
+      options: [{ withEdgeSuffix: true }],
+      ...useSchema(/* GraphQL */ `
+        scalar Email
+        type Aedge {
+          node: Email!
+          cursor: Email!
+        }
+        type AConnection {
+          edges: [Aedge]
+        }
+      `),
+      errors: 1,
+    },
   ],
 });
