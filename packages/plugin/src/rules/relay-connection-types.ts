@@ -44,16 +44,6 @@ const rule: GraphQLESLintRule = {
           '- Connection type must contain a field `edges` that return a list type which wraps an edge type',
           '- Connection type must contain a field `pageInfo` that return a non-null `PageInfo` Object type',
         ].join('\n'),
-        '### Edge types',
-        [
-          "- A type that is returned in list form by a connection type's `edges` field is considered by this spec to be an Edge type",
-          '- Edge type must be an Object type',
-          '- Edge type must contain a field `node` that return either a Scalar, Enum, Object, Interface, Union, or a non-null wrapper around one of those types. Notably, this field cannot return a list',
-          '- Edge type must contain a field `cursor` that return a type String, a non-null wrapper around a String, a scalar, or a non-null wrapper around a scalar',
-          '- Edge type name must end in "Edge" _(optional)_',
-          "- Edge type's field `node` must implements `Node` interface _(optional)_",
-          '- A list type should only wrap an edge type _(optional)_',
-        ].join('\n'),
         '### Arguments',
         [
           '- A field that returns a Connection type must include forward pagination arguments, backward pagination arguments, or both',

@@ -18,12 +18,11 @@ const rule: GraphQLESLintRule = {
       category: 'Schema',
       description: [
         'Set of rules to follow Relay specification for `PageInfo` object.',
-        [
-          '- `PageInfo` must be an Object type',
-          '- `PageInfo` must contain fields `hasPreviousPage` and `hasNextPage`, which return non-null booleans',
-          '- `PageInfo` must contain fields `startCursor` and `endCursor`, which return non-null opaque strings',
-        ].join('\n'),
-      ].join('\n\n'),
+        '',
+        '- `PageInfo` must be an Object type',
+        '- `PageInfo` must contain fields `hasPreviousPage` and `hasNextPage`, which return non-null booleans',
+        '- `PageInfo` must contain fields `startCursor` and `endCursor`, which return non-null opaque strings',
+      ].join('\n'),
       url: `https://github.com/dotansimha/graphql-eslint/blob/master/docs/rules/${RULE_ID}.md`,
       examples: [
         {
@@ -69,8 +68,7 @@ const rule: GraphQLESLintRule = {
 
         const checkField = (
           fieldName: 'hasPreviousPage' | 'hasNextPage' | 'startCursor' | 'endCursor',
-          typeName: 'Boolean' | 'String',
-          returnType: 'boolean' | 'opaque string'
+          typeName: 'Boolean' | 'String'
         ): void => {
           const field = fieldMap[fieldName];
           const hasField = Boolean(field);
@@ -80,6 +78,7 @@ const rule: GraphQLESLintRule = {
             field.gqlType.gqlType.kind === Kind.NAMED_TYPE &&
             field.gqlType.gqlType.name.value === typeName;
           if (!isNonNullBoolean) {
+            const returnType = typeName === 'Boolean' ? 'boolean' : 'opaque string';
             context.report({
               node: hasField ? field.gqlType : node.name,
               message: hasField
@@ -90,10 +89,10 @@ const rule: GraphQLESLintRule = {
         };
 
         for (const fieldName of ['hasPreviousPage', 'hasNextPage'] as const) {
-          checkField(fieldName, 'Boolean', 'boolean');
+          checkField(fieldName, 'Boolean');
         }
         for (const fieldName of ['startCursor', 'endCursor'] as const) {
-          checkField(fieldName, 'String', 'opaque string');
+          checkField(fieldName, 'String');
         }
       },
     };
