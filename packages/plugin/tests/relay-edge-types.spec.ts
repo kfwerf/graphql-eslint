@@ -126,5 +126,25 @@ ruleTester.runGraphQLTests<[EdgeTypesConfig], true>('relay-edge-types', rule, {
       `),
       errors: 1,
     },
+    {
+      name: 'list type',
+      options: [{ listTypeCanWrapOnlyEdgeType: true }],
+      ...useSchema(/* GraphQL */ `
+        type AEdge {
+          node: Int!
+          cursor: String!
+        }
+        type AConnection {
+          edges: [AEdge]
+        }
+        type User {
+          comments: [Int]
+          likes: [Int!]
+          messages: [Int]!
+          posts: [Int!]!
+        }
+      `),
+      errors: 4,
+    },
   ],
 });

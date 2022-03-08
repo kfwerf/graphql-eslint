@@ -128,3 +128,55 @@ exports[` 4`] = `
       7 |           edges: [Aedge]
       8 |         }
 `;
+
+exports[` 5`] = `
+Code
+
+       1 |         type AEdge {
+       2 |           node: Int!
+       3 |           cursor: String!
+       4 |         }
+       5 |         type AConnection {
+       6 |           edges: [AEdge]
+       7 |         }
+       8 |         type User {
+       9 |           comments: [Int]
+      10 |           likes: [Int!]
+      11 |           messages: [Int]!
+      12 |           posts: [Int!]!
+      13 |         }
+
+⚙️ Options
+
+    {
+      "listTypeCanWrapOnlyEdgeType": true
+    }
+
+❌ Error 1/4
+
+       8 |         type User {
+    >  9 |           comments: [Int]
+         |                     ^^^^ A list type should only wrap an edge type.
+      10 |           likes: [Int!]
+
+❌ Error 2/4
+
+       9 |           comments: [Int]
+    > 10 |           likes: [Int!]
+         |                  ^^^^^ A list type should only wrap an edge type.
+      11 |           messages: [Int]!
+
+❌ Error 3/4
+
+      10 |           likes: [Int!]
+    > 11 |           messages: [Int]!
+         |                     ^^^^^ A list type should only wrap an edge type.
+      12 |           posts: [Int!]!
+
+❌ Error 4/4
+
+      11 |           messages: [Int]!
+    > 12 |           posts: [Int!]!
+         |                  ^^^^^^ A list type should only wrap an edge type.
+      13 |         }
+`;

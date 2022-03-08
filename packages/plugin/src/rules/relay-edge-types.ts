@@ -13,10 +13,12 @@ import { getDocumentNodeFromSchema } from '@graphql-tools/utils';
 import { getTypeName, requireGraphQLSchemaFromContext } from '../utils';
 import { GraphQLESLintRule } from '../types';
 import { GraphQLESTreeNode } from '../estree-parser';
+import { GraphQLESLintRuleListener } from '../testkit';
 
 const RULE_ID = 'relay-edge-types';
 const MESSAGE_MUST_BE_OBJECT_TYPE = 'MESSAGE_MUST_BE_OBJECT_TYPE';
 const MESSAGE_MISSING_EDGE_SUFFIX = 'MESSAGE_MISSING_EDGE_SUFFIX';
+const MESSAGE_LIST_TYPE_ONLY_EDGE_TYPE = 'MESSAGE_LIST_TYPE_ONLY_EDGE_TYPE';
 
 type EdgeTypes = Set<string>;
 let edgeTypesCache: EdgeTypes;
@@ -91,6 +93,7 @@ const rule: GraphQLESLintRule<[EdgeTypesConfig], true> = {
     messages: {
       [MESSAGE_MUST_BE_OBJECT_TYPE]: 'Edge type must be an Object type.',
       [MESSAGE_MISSING_EDGE_SUFFIX]: 'Edge type must have "Edge" suffix.',
+      [MESSAGE_LIST_TYPE_ONLY_EDGE_TYPE]: 'A list type should only wrap an edge type.',
     },
     schema: {
       type: 'array',
@@ -159,7 +162,7 @@ const rule: GraphQLESLintRule<[EdgeTypesConfig], true> = {
       }
     };
 
-    return {
+    const listeners: GraphQLESLintRuleListener = {
       ':matches(ObjectTypeDefinition, ObjectTypeExtension)[name.value=/Connection$/] > FieldDefinition[name.value=edges] > .gqlType Name'(
         node: GraphQLESTreeNode<NameNode, true>
       ) {
@@ -169,7 +172,7 @@ const rule: GraphQLESLintRule<[EdgeTypesConfig], true> = {
         }
       },
       ':matches(ObjectTypeDefinition, ObjectTypeExtension)'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode, true>) {
-        const typeName = node.name.value
+        const typeName = node.name.value;
         if (edgeTypes.has(typeName)) {
           checkNodeField(node);
           checkCursorField(node);
@@ -179,6 +182,22 @@ const rule: GraphQLESLintRule<[EdgeTypesConfig], true> = {
         }
       },
     };
+
+    if (options.listTypeCanWrapOnlyEdgeType) {
+      listeners['FieldDefinition > .gqlType'] = (node: GraphQLESTreeNode<TypeNode, true>) => {
+        if (
+          node.kind === Kind.LIST_TYPE ||
+          (node.kind === Kind.NON_NULL_TYPE && node.gqlType.kind === Kind.LIST_TYPE)
+        ) {
+          const typeName = getTypeName(node.rawNode());
+          if (!edgeTypes.has(typeName)) {
+            context.report({ node, messageId: MESSAGE_LIST_TYPE_ONLY_EDGE_TYPE });
+          }
+        }
+      };
+    }
+
+    return listeners;
   },
 };
 
