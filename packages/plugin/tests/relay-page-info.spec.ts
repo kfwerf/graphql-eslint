@@ -25,10 +25,6 @@ ruleTester.runGraphQLTests('relay-page-info', rule, {
   ],
   invalid: [
     {
-      ...useSchema('directive @PageInfo on FIELD_DEFINITION'),
-      errors: 2,
-    },
-    {
       ...useSchema('scalar PageInfo'),
       errors: 1,
     },

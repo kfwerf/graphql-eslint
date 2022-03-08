@@ -1,4 +1,4 @@
-import { GraphQLRuleTester, ParserOptions } from '../src';
+import { GraphQLRuleTester } from '../src';
 import rule from '../src/rules/relay-connection-types';
 
 const ruleTester = new GraphQLRuleTester();
@@ -52,7 +52,6 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
     {
       name: 'should report about non connection types with `Connection` suffix',
       code: /* GraphQL */ `
-        directive @directiveConnection(role: [RoleConnection!]!) on FIELD_DEFINITION
         scalar DateTimeConnection
         union DataConnection = Post
         extend union DataConnection = Comment
@@ -71,7 +70,7 @@ ruleTester.runGraphQLTests('relay-connection-types', rule, {
         type Post
         type Comment
       `,
-      errors: 10,
+      errors: 9,
     },
     {
       name: 'should report about missing `Connection` suffix',

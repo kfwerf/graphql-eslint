@@ -1,9 +1,8 @@
-import { GraphQLSchema, visit, ASTVisitor, NameNode, isObjectType } from 'graphql';
+import { GraphQLSchema, visit, ASTVisitor, NameNode, isObjectType, ObjectTypeDefinitionNode } from 'graphql';
 import { getDocumentNodeFromSchema } from '@graphql-tools/utils';
 import { getTypeName, requireGraphQLSchemaFromContext } from '../utils';
 import { GraphQLESLintRule } from '../types';
 import { GraphQLESTreeNode } from '../estree-parser';
-import { NON_OBJECT_TYPES } from './relay-connection-types';
 
 const RULE_ID = 'relay-edge-types';
 const MESSAGE_MUST_BE_OBJECT_TYPE = 'MESSAGE_MUST_BE_OBJECT_TYPE';
@@ -18,7 +17,6 @@ function getEdgeTypes(schema: GraphQLSchema): EdgeTypes {
     return edgeTypesCache;
   }
   const edgeTypes: EdgeTypes = new Set();
-
   const visitor: ASTVisitor = {
     ObjectTypeDefinition(node): void {
       const typeName = node.name.value;
@@ -28,7 +26,10 @@ function getEdgeTypes(schema: GraphQLSchema): EdgeTypes {
       }
       const edges = node.fields.find(field => field.name.value === 'edges');
       if (edges) {
-        edgeTypes.add(getTypeName(edges));
+        const edgesTypeName = getTypeName(edges);
+        if (isObjectType(edgesTypeName)) {
+          edgeTypes.add(edgesTypeName);
+        }
       }
     },
   };
@@ -88,9 +89,25 @@ const rule: GraphQLESLintRule = {
           context.report({ node, messageId: MESSAGE_MUST_BE_OBJECT_TYPE });
         }
       },
-      [`:matches(${NON_OBJECT_TYPES}) > .name`](node: GraphQLESTreeNode<NameNode, true>) {
-        if (edgeTypes.has(node.value)) {
-          context.report({ node, messageId: MESSAGE_MUST_BE_OBJECT_TYPE });
+      ':matches(ObjectTypeDefinition, ObjectTypeExtension)'(node: GraphQLESTreeNode<ObjectTypeDefinitionNode, true>) {
+        if (!edgeTypes.has(node.name.value)) {
+          return;
+        }
+        const nodeField = node.fields.find(field => field.name.value === 'node');
+        const cursorField = node.fields.find(field => field.name.value === 'cursor');
+        if (!nodeField) {
+          conext.report({
+            node: node.name,
+            message:
+              'Edge type must contain a field `node` that return either a Scalar, Enum, Object, Interface, Union, or a non-null wrapper around one of those types.',
+          });
+        }
+        if (!cursorField) {
+          conext.report({
+            node: node.name,
+            message:
+              'Edge type must contain a field `cursor` that return a type String, a non-null wrapper around a String, a scalar, or a non-null wrapper around a scalar.',
+          });
         }
       },
     };

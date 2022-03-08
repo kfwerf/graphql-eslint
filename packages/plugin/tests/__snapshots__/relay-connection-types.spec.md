@@ -3,93 +3,85 @@
 exports[` 1`] = `
 Code
 
-       1 |         directive @directiveConnection(role: [RoleConnection!]!) on FIELD_DEFINITION
-       2 |         scalar DateTimeConnection
-       3 |         union DataConnection = Post
-       4 |         extend union DataConnection = Comment
-       5 |         input CreateUserConnection
-       6 |         extend input CreateUserConnection {
-       7 |           firstName: String
-       8 |         }
-       9 |         enum RoleConnection
-      10 |         extend enum RoleConnection {
-      11 |           ADMIN
-      12 |         }
-      13 |         interface NodeConnection
-      14 |         extend interface NodeConnection {
-      15 |           id: ID!
-      16 |         }
-      17 |         type Post
-      18 |         type Comment
+       1 |         scalar DateTimeConnection
+       2 |         union DataConnection = Post
+       3 |         extend union DataConnection = Comment
+       4 |         input CreateUserConnection
+       5 |         extend input CreateUserConnection {
+       6 |           firstName: String
+       7 |         }
+       8 |         enum RoleConnection
+       9 |         extend enum RoleConnection {
+      10 |           ADMIN
+      11 |         }
+      12 |         interface NodeConnection
+      13 |         extend interface NodeConnection {
+      14 |           id: ID!
+      15 |         }
+      16 |         type Post
+      17 |         type Comment
 
-❌ Error 1/10
+❌ Error 1/9
 
-    > 1 |         directive @directiveConnection(role: [RoleConnection!]!) on FIELD_DEFINITION
-        |                    ^^^^^^^^^^^^^^^^^^^ Connection type must be an Object type.
-      2 |         scalar DateTimeConnection
-
-❌ Error 2/10
-
-      1 |         directive @directiveConnection(role: [RoleConnection!]!) on FIELD_DEFINITION
-    > 2 |         scalar DateTimeConnection
+    > 1 |         scalar DateTimeConnection
         |                ^^^^^^^^^^^^^^^^^^ Connection type must be an Object type.
-      3 |         union DataConnection = Post
+      2 |         union DataConnection = Post
 
-❌ Error 3/10
+❌ Error 2/9
 
-      2 |         scalar DateTimeConnection
-    > 3 |         union DataConnection = Post
+      1 |         scalar DateTimeConnection
+    > 2 |         union DataConnection = Post
         |               ^^^^^^^^^^^^^^ Connection type must be an Object type.
-      4 |         extend union DataConnection = Comment
+      3 |         extend union DataConnection = Comment
 
-❌ Error 4/10
+❌ Error 3/9
 
-      3 |         union DataConnection = Post
-    > 4 |         extend union DataConnection = Comment
+      2 |         union DataConnection = Post
+    > 3 |         extend union DataConnection = Comment
         |                      ^^^^^^^^^^^^^^ Connection type must be an Object type.
-      5 |         input CreateUserConnection
+      4 |         input CreateUserConnection
 
-❌ Error 5/10
+❌ Error 4/9
 
-      4 |         extend union DataConnection = Comment
-    > 5 |         input CreateUserConnection
+      3 |         extend union DataConnection = Comment
+    > 4 |         input CreateUserConnection
         |               ^^^^^^^^^^^^^^^^^^^^ Connection type must be an Object type.
-      6 |         extend input CreateUserConnection {
+      5 |         extend input CreateUserConnection {
 
-❌ Error 6/10
+❌ Error 5/9
 
-      5 |         input CreateUserConnection
-    > 6 |         extend input CreateUserConnection {
+      4 |         input CreateUserConnection
+    > 5 |         extend input CreateUserConnection {
         |                      ^^^^^^^^^^^^^^^^^^^^ Connection type must be an Object type.
-      7 |           firstName: String
+      6 |           firstName: String
 
-❌ Error 7/10
+❌ Error 6/9
 
-       8 |         }
-    >  9 |         enum RoleConnection
-         |              ^^^^^^^^^^^^^^ Connection type must be an Object type.
-      10 |         extend enum RoleConnection {
+      7 |         }
+    > 8 |         enum RoleConnection
+        |              ^^^^^^^^^^^^^^ Connection type must be an Object type.
+      9 |         extend enum RoleConnection {
 
-❌ Error 8/10
+❌ Error 7/9
 
-       9 |         enum RoleConnection
-    > 10 |         extend enum RoleConnection {
+       8 |         enum RoleConnection
+    >  9 |         extend enum RoleConnection {
          |                     ^^^^^^^^^^^^^^ Connection type must be an Object type.
-      11 |           ADMIN
+      10 |           ADMIN
 
-❌ Error 9/10
+❌ Error 8/9
 
-      12 |         }
-    > 13 |         interface NodeConnection
+      11 |         }
+    > 12 |         interface NodeConnection
          |                   ^^^^^^^^^^^^^^ Connection type must be an Object type.
-      14 |         extend interface NodeConnection {
+      13 |         extend interface NodeConnection {
 
-❌ Error 10/10
+❌ Error 9/9
 
-      13 |         interface NodeConnection
-    > 14 |         extend interface NodeConnection {
+      12 |         interface NodeConnection
+    > 13 |         extend interface NodeConnection {
          |                          ^^^^^^^^^^^^^^ Connection type must be an Object type.
-      15 |           id: ID!
+      14 |           id: ID!
 `;
 
 exports[` 2`] = `

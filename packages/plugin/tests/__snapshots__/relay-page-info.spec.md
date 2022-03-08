@@ -1,29 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[` 1`] = `
-Code
-
-      1 | directive @PageInfo on FIELD_DEFINITION
-
-❌ Error 1/2
-
-    > 1 | directive @PageInfo on FIELD_DEFINITION
-        | ^ The server must provide a \`PageInfo\` object.
-
-❌ Error 2/2
-
-    > 1 | directive @PageInfo on FIELD_DEFINITION
-        |            ^^^^^^^^ \`PageInfo\` must be an Object type.
-`;
-
-exports[` 2`] = `
 ❌ Error
 
     > 1 | scalar PageInfo
         |        ^^^^^^^^ \`PageInfo\` must be an Object type.
 `;
 
-exports[` 3`] = `
+exports[` 2`] = `
 Code
 
       1 |         union PageInfo = UserConnection | Post
@@ -50,7 +34,7 @@ Code
       3 |         type UserConnection {
 `;
 
-exports[` 4`] = `
+exports[` 3`] = `
 Code
 
       1 |         input PageInfo
@@ -75,7 +59,7 @@ Code
       3 |           hasPreviousPage: Boolean!
 `;
 
-exports[` 5`] = `
+exports[` 4`] = `
 Code
 
       1 |         enum PageInfo
@@ -100,7 +84,7 @@ Code
       3 |           hasPreviousPage
 `;
 
-exports[` 6`] = `
+exports[` 5`] = `
 Code
 
       1 |         interface PageInfo
@@ -125,7 +109,7 @@ Code
       3 |           hasPreviousPage: Boolean!
 `;
 
-exports[` 7`] = `
+exports[` 6`] = `
 Code
 
       1 |         type PageInfo
@@ -161,7 +145,7 @@ Code
       2 |         extend type PageInfo {
 `;
 
-exports[` 8`] = `
+exports[` 7`] = `
 Code
 
       1 |         type PageInfo {
@@ -196,7 +180,7 @@ Code
       4 |         }
 `;
 
-exports[` 9`] = `
+exports[` 8`] = `
 ❌ Error
 
     > 1 | type Query

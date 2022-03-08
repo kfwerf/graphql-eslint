@@ -54,7 +54,7 @@ ruleTester.runGraphQLTests('relay-edge-types', rule, {
           pageInfo: PageInfo!
         }
       `),
-      errors: 8,
+      errors: 4,
     },
   ],
 });
