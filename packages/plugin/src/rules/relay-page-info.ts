@@ -80,7 +80,7 @@ const rule: GraphQLESLintRule = {
           if (!isNonNullBoolean) {
             const returnType = typeName === 'Boolean' ? 'boolean' : 'opaque string';
             context.report({
-              node: hasField ? field.gqlType : node.name,
+              node: hasField ? field.name : node.name,
               message: hasField
                 ? `Field \`${fieldName}\` must return non-null ${returnType}.`
                 : `\`PageInfo\` must contain a field \`${fieldName}\`, that return non-null ${returnType}.`,

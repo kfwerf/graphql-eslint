@@ -169,14 +169,14 @@ Code
 
       1 |         type PageInfo {
     > 2 |           hasPreviousPage: Boolean
-        |                            ^^^^^^^ Field \`hasPreviousPage\` must return non-null boolean.
+        |           ^^^^^^^^^^^^^^^ Field \`hasPreviousPage\` must return non-null boolean.
       3 |           startCursor: String
 
 ❌ Error 4/4
 
       2 |           hasPreviousPage: Boolean
     > 3 |           startCursor: String
-        |                        ^^^^^^ Field \`startCursor\` must return non-null opaque string.
+        |           ^^^^^^^^^^^ Field \`startCursor\` must return non-null opaque string.
       4 |         }
 `;
 

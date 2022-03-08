@@ -55,3 +55,56 @@ Code
          |                   ^^^^^ Edge type must be an Object type
       22 |           pageInfo: PageInfo!
 `;
+
+exports[` 2`] = `
+Code
+
+      1 |         type PageInfo
+      2 |         type AEdge
+      3 |         type AConnection {
+      4 |           edges: [AEdge]
+      5 |           pageInfo: PageInfo!
+      6 |         }
+
+❌ Error 1/2
+
+      1 |         type PageInfo
+    > 2 |         type AEdge
+        |              ^^^^^ Edge type must contain a field \`node\` that return either a Scalar, Enum, Object, Interface, Union, or a non-null wrapper around one of those types.
+      3 |         type AConnection {
+
+❌ Error 2/2
+
+      1 |         type PageInfo
+    > 2 |         type AEdge
+        |              ^^^^^ Edge type must contain a field \`cursor\` that return either a String, Scalar, or a non-null wrapper wrapper around one of those types.
+      3 |         type AConnection {
+`;
+
+exports[` 3`] = `
+Code
+
+      1 |         type PageInfo
+      2 |         type AEdge {
+      3 |           node: [PageInfo!]!
+      4 |           cursor: [PageInfo!]!
+      5 |         }
+      6 |         type AConnection {
+      7 |           edges: [AEdge]
+      8 |           pageInfo: PageInfo!
+      9 |         }
+
+❌ Error 1/2
+
+      2 |         type AEdge {
+    > 3 |           node: [PageInfo!]!
+        |           ^^^^ Field \`node\` must return either a Scalar, Enum, Object, Interface, Union, or a non-null wrapper around one of those types.
+      4 |           cursor: [PageInfo!]!
+
+❌ Error 2/2
+
+      3 |           node: [PageInfo!]!
+    > 4 |           cursor: [PageInfo!]!
+        |           ^^^^^^ Field \`cursor\` must return either a String, Scalar, or a non-null wrapper wrapper around one of those types.
+      5 |         }
+`;

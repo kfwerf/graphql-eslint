@@ -1,4 +1,14 @@
-import { GraphQLSchema, visit, ASTVisitor, NameNode, isObjectType, ObjectTypeDefinitionNode } from 'graphql';
+import {
+  GraphQLSchema,
+  visit,
+  ASTVisitor,
+  NameNode,
+  isObjectType,
+  ObjectTypeDefinitionNode,
+  Kind,
+  TypeNode,
+  isScalarType,
+} from 'graphql';
 import { getDocumentNodeFromSchema } from '@graphql-tools/utils';
 import { getTypeName, requireGraphQLSchemaFromContext } from '../utils';
 import { GraphQLESLintRule } from '../types';
@@ -27,7 +37,7 @@ function getEdgeTypes(schema: GraphQLSchema): EdgeTypes {
       const edges = node.fields.find(field => field.name.value === 'edges');
       if (edges) {
         const edgesTypeName = getTypeName(edges);
-        if (isObjectType(edgesTypeName)) {
+        if (isObjectType(schema.getType(edgesTypeName))) {
           edgeTypes.add(edgesTypeName);
         }
       }
@@ -51,7 +61,7 @@ const rule: GraphQLESLintRule = {
         "- A type that is returned in list form by a connection type's `edges` field is considered by this spec to be an Edge type",
         '- Edge type must be an Object type',
         '- Edge type must contain a field `node` that return either a Scalar, Enum, Object, Interface, Union, or a non-null wrapper around one of those types. Notably, this field cannot return a list',
-        '- Edge type must contain a field `cursor` that return a type String, a non-null wrapper around a String, a scalar, or a non-null wrapper around a scalar',
+        '- Edge type must contain a field `cursor` that return a String, Scalar, or a non-null wrapper wrapper around one of those types',
         '- Edge type name must end in "Edge" _(optional)_',
         "- Edge type's field `node` must implements `Node` interface _(optional)_",
         '- A list type should only wrap an edge type _(optional)_',
@@ -80,6 +90,42 @@ const rule: GraphQLESLintRule = {
     const schema = requireGraphQLSchemaFromContext(RULE_ID, context);
     const edgeTypes = getEdgeTypes(schema);
 
+    const isNamedOrNonNullNamed = (node: GraphQLESTreeNode<TypeNode>): boolean =>
+      node.kind === Kind.NAMED_TYPE || (node.kind === Kind.NON_NULL_TYPE && node.gqlType.kind === Kind.NAMED_TYPE);
+
+    const checkNodeField = (node: GraphQLESTreeNode<ObjectTypeDefinitionNode>): void => {
+      const nodeField = node.fields.find(field => field.name.value === 'node');
+      const message =
+        'return either a Scalar, Enum, Object, Interface, Union, or a non-null wrapper around one of those types.';
+      if (!nodeField) {
+        context.report({
+          node: node.name,
+          message: `Edge type must contain a field \`node\` that ${message}`,
+        });
+      } else if (!isNamedOrNonNullNamed(nodeField.gqlType)) {
+        context.report({ node: nodeField.name, message: `Field \`node\` must ${message}` });
+      }
+    };
+
+    const checkCursorField = (node: GraphQLESTreeNode<ObjectTypeDefinitionNode>): void => {
+      const cursorField = node.fields.find(field => field.name.value === 'cursor');
+      const message = 'return either a String, Scalar, or a non-null wrapper wrapper around one of those types.';
+      if (!cursorField) {
+        context.report({
+          node: node.name,
+          message: `Edge type must contain a field \`cursor\` that ${message}`,
+        });
+        return;
+      }
+      const typeName = getTypeName(cursorField.rawNode());
+      if (
+        !isNamedOrNonNullNamed(cursorField.gqlType) ||
+        (typeName !== 'String' && !isScalarType(schema.getType(typeName)))
+      ) {
+        context.report({ node: cursorField.name, message: `Field \`cursor\` must ${message}` });
+      }
+    };
+
     return {
       ':matches(ObjectTypeDefinition, ObjectTypeExtension)[name.value=/Connection$/] > FieldDefinition[name.value=edges] > .gqlType Name'(
         node: GraphQLESTreeNode<NameNode, true>
@@ -93,22 +139,8 @@ const rule: GraphQLESLintRule = {
         if (!edgeTypes.has(node.name.value)) {
           return;
         }
-        const nodeField = node.fields.find(field => field.name.value === 'node');
-        const cursorField = node.fields.find(field => field.name.value === 'cursor');
-        if (!nodeField) {
-          conext.report({
-            node: node.name,
-            message:
-              'Edge type must contain a field `node` that return either a Scalar, Enum, Object, Interface, Union, or a non-null wrapper around one of those types.',
-          });
-        }
-        if (!cursorField) {
-          conext.report({
-            node: node.name,
-            message:
-              'Edge type must contain a field `cursor` that return a type String, a non-null wrapper around a String, a scalar, or a non-null wrapper around a scalar.',
-          });
-        }
+        checkNodeField(node);
+        checkCursorField(node);
       },
     };
   },
