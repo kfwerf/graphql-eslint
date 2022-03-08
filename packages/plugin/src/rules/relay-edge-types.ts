@@ -1,12 +1,14 @@
-import { GraphQLESLintRule } from '../types';
-import { GraphQLSchema, visit, ASTVisitor, Kind, NameNode, isObjectType, print } from 'graphql';
+import { GraphQLSchema, visit, ASTVisitor, NameNode, isObjectType } from 'graphql';
 import { getDocumentNodeFromSchema } from '@graphql-tools/utils';
-import { GraphQLESTreeNode } from '../estree-parser';
 import { getTypeName, requireGraphQLSchemaFromContext } from '../utils';
-
-type EdgeTypes = Set<string>;
+import { GraphQLESLintRule } from '../types';
+import { GraphQLESTreeNode } from '../estree-parser';
+import { NON_OBJECT_TYPES } from './relay-connection-types';
 
 const RULE_ID = 'relay-edge-types';
+const MESSAGE_MUST_BE_OBJECT_TYPE = 'MESSAGE_MUST_BE_OBJECT_TYPE';
+
+type EdgeTypes = Set<string>;
 let edgeTypesCache: EdgeTypes;
 
 function getEdgeTypes(schema: GraphQLSchema): EdgeTypes {
@@ -24,14 +26,9 @@ function getEdgeTypes(schema: GraphQLSchema): EdgeTypes {
       if (!hasConnectionSuffix) {
         return;
       }
-      const { edges, pageInfo } = Object.fromEntries(node.fields.map(field => [field.name.value, field]));
-      if (edges && pageInfo) {
-        const isListType =
-          edges.type.kind === Kind.LIST_TYPE ||
-          (edges.type.kind === Kind.NON_NULL_TYPE && edges.type.type.kind === Kind.LIST_TYPE);
-        if (isListType) {
-          edgeTypes.add(getTypeName(edges));
-        }
+      const edges = node.fields.find(field => field.name.value === 'edges');
+      if (edges) {
+        edgeTypes.add(getTypeName(edges));
       }
     },
   };
@@ -63,30 +60,37 @@ const rule: GraphQLESLintRule = {
       requiresSchema: true,
       examples: [
         {
-          title: 'Incorrect',
-          code: /* GraphQL */ ``,
-        },
-        {
           title: 'Correct',
-          code: /* GraphQL */ ``,
+          code: /* GraphQL */ `
+            type UserConnection {
+              edges: [UserEdge]
+              pageInfo: PageInfo!
+            }
+          `,
         },
       ],
     },
     messages: {
-      [RULE_ID]: '',
+      [MESSAGE_MUST_BE_OBJECT_TYPE]: 'Edge type must be an Object type',
     },
     schema: [],
   },
   create(context) {
     const schema = requireGraphQLSchemaFromContext(RULE_ID, context);
     const edgeTypes = getEdgeTypes(schema);
+
     return {
       ':matches(ObjectTypeDefinition, ObjectTypeExtension)[name.value=/Connection$/] > FieldDefinition[name.value=edges] > .gqlType Name'(
         node: GraphQLESTreeNode<NameNode, true>
       ) {
         const type = schema.getType(node.value);
         if (!isObjectType(type)) {
-          context.report({ node, message: 'Edge type must be an Object type' });
+          context.report({ node, messageId: MESSAGE_MUST_BE_OBJECT_TYPE });
+        }
+      },
+      [`:matches(${NON_OBJECT_TYPES}) > .name`](node: GraphQLESTreeNode<NameNode, true>) {
+        if (edgeTypes.has(node.value)) {
+          context.report({ node, messageId: MESSAGE_MUST_BE_OBJECT_TYPE });
         }
       },
     };
