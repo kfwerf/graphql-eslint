@@ -18,6 +18,7 @@ import noScalarResultTypeOnMutation from './no-scalar-result-type-on-mutation';
 import noTypenamePrefix from './no-typename-prefix';
 import noUnreachableTypes from './no-unreachable-types';
 import noUnusedFields from './no-unused-fields';
+import nonNullUnion from './non-null-union';
 import requireDeprecationDate from './require-deprecation-date';
 import requireDeprecationReason from './require-deprecation-reason';
 import requireDescription from './require-description';
@@ -45,6 +46,7 @@ export const rules = {
   'no-typename-prefix': noTypenamePrefix,
   'no-unreachable-types': noUnreachableTypes,
   'no-unused-fields': noUnusedFields,
+  'non-null-union': nonNullUnion,
   'require-deprecation-date': requireDeprecationDate,
   'require-deprecation-reason': requireDeprecationReason,
   'require-description': requireDescription,

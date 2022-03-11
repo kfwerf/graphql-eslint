@@ -74,6 +74,7 @@
       "graphql/validation/rules/NoUndefinedVariablesRule",
       "graphql/validation/rules/NoUnusedFragmentsRule",
       "graphql/validation/rules/NoUnusedVariablesRule",
+      "graphql/validation/rules/NonNullUnionRule",
       "graphql/validation/rules/OverlappingFieldsCanBeMergedRule",
       "graphql/validation/rules/PossibleFragmentSpreadsRule",
       "graphql/validation/rules/PossibleTypeExtensionsRule",
