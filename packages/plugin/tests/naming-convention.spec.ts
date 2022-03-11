@@ -140,6 +140,20 @@ ruleTester.runGraphQLTests<[NamingConventionRuleConfig]>('naming-convention', ru
         },
       ],
     },
+    {
+      code: 'type _FieldSet { _uri: String }',
+      options: [{ types: { style: 'PascalCase', ignorePattern: '^(_FieldSet)' }, FieldDefinition: { style: 'camelCase', ignorePattern: '^(_uri)' } }],
+    },
+    {
+      code: /* GraphQL */ `
+      scalar _FieldSet
+      directive @requires(fields: _FieldSet!) on FIELD_DEFINITION
+      type MyObject { _uri: String }
+      `,
+      options: [{ 
+        types: { style: 'PascalCase', ignorePattern: '^(_FieldSet)' },
+        FieldDefinition: { style: 'camelCase', ignorePattern: '^(_uri)' } }],
+    },
   ],
   invalid: [
     {

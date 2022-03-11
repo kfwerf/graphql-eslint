@@ -3,6 +3,7 @@ import { GraphQLESLintRule, ValueOf } from '../types';
 import { TYPES_KINDS, convertCase, ARRAY_DEFAULT_OPTIONS } from '../utils';
 import { GraphQLESTreeNode } from '../estree-parser';
 import { GraphQLESLintRuleListener } from '../testkit';
+import { isNullOrUndefined } from 'util';
 
 const KindToDisplayName = {
   // types
@@ -245,6 +246,8 @@ const rule: GraphQLESLintRule<[NamingConventionRuleConfig]> = {
     const options = context.options[0] || {};
     const { allowLeadingUnderscore, allowTrailingUnderscore, types, ...restOptions } = options;
 
+    const ignoredNodes = [];
+
     function normalisePropertyOption(kind: string): PropertySchema {
       const style: Options = restOptions[kind] || types;
       return typeof style === 'object' ? style : { style };
@@ -263,12 +266,35 @@ const rule: GraphQLESLintRule<[NamingConventionRuleConfig]> = {
       });
     }
 
+    const hasBeenIgnored = (node: GraphQLESTreeNode<NameNode>, selector: string = null): boolean => {
+      if (!node) {
+        return false;
+      }
+      
+      const { ignorePattern } = normalisePropertyOption(selector);
+      const ignoredInIndex = ignoredNodes.includes(node);
+      if (ignoredInIndex || ignorePattern && new RegExp(ignorePattern, 'u').test(node.value)) {
+        if (!ignoredInIndex) ignoredNodes.push(node);
+        return true;
+      }
+      
+      return false;
+    }
+
+    const checkUnderscore = (isLeading: boolean) => (node: GraphQLESTreeNode<NameNode>) => {
+      if (ignoredNodes.includes(node) || hasBeenIgnored(node)) {
+        return;
+      }
+      const suggestedName = node.value.replace(isLeading ? /^_+/ : /_+$/, '');
+      report(node, `${isLeading ? 'Leading' : 'Trailing'} underscores are not allowed`, suggestedName);
+    };
+
     const checkNode = (selector: string) => (n: GraphQLESTreeNode<ValueOf<AllowedKindToNode>>) => {
       const { name: node } = n.kind === Kind.VARIABLE_DEFINITION ? n.variable : n;
       if (!node) {
         return;
       }
-      const { prefix, suffix, forbiddenPrefixes, forbiddenSuffixes, style, ignorePattern } =
+      const { prefix, suffix, forbiddenPrefixes, forbiddenSuffixes, style } =
         normalisePropertyOption(selector);
       const nodeType = KindToDisplayName[n.kind] || n.kind;
       const nodeName = node.value;
@@ -286,7 +312,7 @@ const rule: GraphQLESLintRule<[NamingConventionRuleConfig]> = {
         renameToName: string;
       } | void {
         const name = nodeName.replace(/(^_+)|(_+$)/g, '');
-        if (ignorePattern && new RegExp(ignorePattern, 'u').test(name)) {
+        if (hasBeenIgnored(node, selector)) {
           return;
         }
         if (prefix && !name.startsWith(prefix)) {
@@ -329,12 +355,13 @@ const rule: GraphQLESLintRule<[NamingConventionRuleConfig]> = {
       }
     };
 
-    const checkUnderscore = (isLeading: boolean) => (node: GraphQLESTreeNode<NameNode>) => {
-      const suggestedName = node.value.replace(isLeading ? /^_+/ : /_+$/, '');
-      report(node, `${isLeading ? 'Leading' : 'Trailing'} underscores are not allowed`, suggestedName);
-    };
-
     const listeners: GraphQLESLintRuleListener = {};
+
+    const selectors = new Set([types && TYPES_KINDS, Object.keys(restOptions)].flat().filter(Boolean));
+
+    for (const selector of selectors) {
+      listeners[selector] = checkNode(selector);
+    }
 
     if (!allowLeadingUnderscore) {
       listeners['Name[value=/^_/]:matches([parent.kind!=Field], [parent.kind=Field][parent.alias])'] =
@@ -345,11 +372,6 @@ const rule: GraphQLESLintRule<[NamingConventionRuleConfig]> = {
         checkUnderscore(false);
     }
 
-    const selectors = new Set([types && TYPES_KINDS, Object.keys(restOptions)].flat().filter(Boolean));
-
-    for (const selector of selectors) {
-      listeners[selector] = checkNode(selector);
-    }
     return listeners;
   },
 };
